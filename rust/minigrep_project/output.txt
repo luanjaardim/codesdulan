@@ -1,0 +1,8 @@
+1: I'm nobody! Who are you?
+2: Are you nobody, too?
+3: Then there's a pair of us - don't tell!
+4: They'd banish us, you know.
+5: How dreary to be somebody!
+6: How public, like a frog
+7: To tell your name the livelong day
+8: To an admiring bog!
