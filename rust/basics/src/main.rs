@@ -903,6 +903,66 @@ fn main() -> io::Result<()>{
     //semelhante ao return 0; de C
 }*/
 
+//WORKING WITH CLOSURES
+/*use std::thread;
+fn main() {
+    //closures are functions like, but they can infer types capturing the enviroment
+    let x = |x, y| { x + y };
+    println!("{}", x(1, 1));
+    //once the compiler infers te types of a closure, they cannot change
+    // println!("{}", x(1.0, 2.0)); //uncomment to see the error
+
+    //by default, closures make references, imut or mut, like:
+    let mut v = vec![1, 2, 3];
+    let borrow_imut = || { println!("{v:?}"); };
+    borrow_imut(); //borrow_imut only needs a immutable reference
+
+    let mut borrow_mut = || {
+        v.push(4);
+        println!("{v:?}");
+    };
+    borrow_mut(); //here we need a v mutable reference, the closure has to be mut too 
+
+    //we can pass the ownership to the closure using the "move" keyword
+    let takes_owner_n_give_back = move | x | {
+        v.push(x);
+        println!("{v:?}");
+        v
+    };
+    // println!("{v:?}"); //v lost his ownership
+    let v2 = takes_owner_n_give_back(5); //v2 received it back
+    println!("{v2:?}");
+
+    //some functions/methods can receive closures as arguments, just like:
+    thread::spawn(|| println!("Hi, i'm a thread")).join().expect("Fail to spawn");
+
+    //this can be done implementing the traits Fn, FnOnce or FnMut
+    let nome = String::from("Bob Dylan");
+    let add = |x: i32, y: i32| { x+y };
+    let sub = |x: i32, y:i32| { x-y };
+    let kk = Sla{ nome: nome.clone(), sla_manin: add };
+    println!("{} {}", kk.nome, (kk.sla_manin)(9, 9));
+    //kk.sla_manin = sub;   //for this one, we can't change the field, see the next one
+
+    //here we are receiving a fn, instead of a closure, but we can pass a closure too!
+    let mut kk2 = Sla2 {
+        nome, 
+        sla_manin: add
+    };
+    println!("{} {}", kk2.nome,(kk2.sla_manin)(9, 9));
+    kk2.sla_manin = sub;
+    println!("{}", (kk2.sla_manin)(10, 9));
+}
+struct Sla<F: Fn(i32, i32) -> i32>{
+    nome: String,
+    sla_manin: F //field as a closure, can't change 
+}
+struct Sla2<T>
+{
+    nome: String,
+    sla_manin: fn(T, T) -> T //field as a fn, can change, it accepts closures too
+}*/
+
 //UTILIZAÇÃO DO DEREFERENCE OPERATOR (" * ")
 /*fn main(){
     let mut a = vec![0; 5];
