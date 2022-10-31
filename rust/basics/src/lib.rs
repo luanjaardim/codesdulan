@@ -1,5 +1,5 @@
 //IMPLEMENTAÇÃO DE TRAIT PARA A PARTE DE TIPOS GENÉRICOS NA MAIN
-/* 
+
 //traits são como assinaturas de métodos que podem ser reutilizadas entre diversos tipos
 //quando fazemos a implementação dela para determinado tipo
 //devemos sempre colocar &self quando queremos que a função seja um método
@@ -64,16 +64,16 @@ pub fn notify(item: &impl Summary) {
 //a função prt recebe argumentos do tipo T, apenas se T possui implementação para o trait Display
 //ou seja, T é um tipo que pode ser representado com {} na macro println! ou print!
 pub fn prt<T: std::fmt::Display>(item: &T) {
-    print!("{} ", item);
+    println!("{} ", item);
 }
 //já prt2 aceita apenas tipos que possuem implementação para o trait Debug (tupples, arrays, etc)
 pub fn prt2<T: std::fmt::Debug> (item: &T) {
-    print!("{:?} ", item);
+    println!("{:?} ", item);
 }
 //prt3 funciona apenas para aqueles tipos que implementam ambos traits, tupples, por exemplo, implementa
 //Debug, mas n Display, logo ela n pode ser exibida por essa função
 pub fn prt3<T: std::fmt::Debug + std::fmt::Display> (item: &T) {
-    print!("{} or {:?}", item, item);
+    println!("{} or {:?}", item, item);
 }
 
 //cmp recebe dois argumentos de mesmo tipo e devolve o maior
@@ -120,13 +120,18 @@ impl<T> Pair<T, T>
 //perceba que se não implementarmos isso a operação == irá emitir um erro
 //OBS.: n é preciso nessa implementação do pub em eq, já que eq já está no prelúdio 
 impl<T: PartialEq, U: PartialEq> PartialEq for Pair<T, U>{
-    //para saber a assisntura das funções de PartialEq podemos ir em Rust doc
+    //para saber a assinatura das funções de PartialEq podemos ir em Rust doc
     fn eq(&self, other: &Self) -> bool{ 
         if self.0 == other.0 && self.1 == other.1{ return true }
         false 
     }
 }
-*/
+
+pub mod sla_man{ //módulo dentro de lib, deve ser pub para que possamos acessá-lo da main
+    pub fn sla_man_2(){ //asssim como a função nele
+        println!("sla man, mó fita");
+    }
+}
 
 //TESTES COM AUXÍLIO DA CONFIG(cfg) TEST 
 /* 

@@ -5,6 +5,7 @@
     let x:i128 = 0; //declarações com let apenas criam variáveis não modificáveis
     let mut y:u128 = 999; //mut permite que esse valor seja alterado com novas atribuições
         println!("{}", y); //a exclamção indica que é uma macro
+        println!("{y}"); //é outra possibilidade de escrever 
     y = 90;
     //char, bool variables
     let c: char;
@@ -15,20 +16,20 @@
     t = (5, 'z'); //atribuição a t
     (_, c) = t; //atribuição a valores correspondentes em ordem aos itens de t, o _ ignora a atribuição
     t.0 = 55;   //t.0 corresponde à primeira posição de de t, u8
-        println!("{}, {}, {}, {}, {}, {}", x, y, c, b, t.0, t.1);
+        println!("{x}, {y}, {c}, {b}, {}, {}", t.0, t.1);
         println!("{:?}", t); // :? servem para printar uma tupple inteira, com os ()
-
+                             // trata-se de uma característica de certos tipos para a formatação de impressão
     let a:[u32; 9]; //declaração de um array, pode ter apenas um tipo
     a = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     let ar_slice = &a[2..4]; //fazendo um slice, pegando parte dos elementos, de a
-        println!("{:?}", ar_slice);
+        println!("{ar_slice:?}");
     for i in a{     //estrutura for
         print!("{} ", i); //print sem ln não pula linhas
     }
     println!("\na size: {}", a.len());
 
     fn alo(a: u32) -> u32{ //é uma função que recebe um u32 e devolve um u32
-        a // a variável sozinha no final da função representa o retorno
+        a // a variável sozinha, sem ';',  no final da função representa o retorno
     }
     println!("{}", alo(100)); //printando o retorno de uma função
 
@@ -74,7 +75,7 @@
     let c = &s3[0..1];
     println!("{}", c);
 
-    //uma excelente maneira é transforma a palavra em um vec de char
+    //uma excelente maneira é transformar a palavra em um vec de char
     let vec_char: Vec<_> = s3.chars().collect(); //o underline significa que o tipo não interessa, pois ele vai ser exatamente o tipo dos elementos do iterador
     //collect é um método que funciona apenas em iteradores e transforma ele em um tipo de coleção(collect) nesse caso usamos o Vec, mas poderiam ser outras
     for i in &vec_char{
@@ -85,7 +86,7 @@
 }*/
 
 //SHADOWING, REPRESENTAÇÕES EM BASES NÃO DECIMAIS, CASTING E RETORNO DE VALORES
-/* fn main() {
+/*fn main() {
     let x = 5;
 
     let x = x + 1; //shadowing x, a nova criação com o mesmo nome "ofusca" a declaração anterior
@@ -110,28 +111,30 @@
     let a:u8 = 0b10010; //binário
     let b:u8 = 0x12; //hexadecimal
     let c:u8 = 0o22; //octal
-    println!("{}, {}, {}", a, b, c);
+    println!("{a}, {b}, {c}");
 
     let alo1:u8 = 99/100; //divisão inteira arredonda pra baixo q nem C
     let alo:f32 = 99 as f32 / 100 as f32; //casting as (99.0/100.0 também funcionaria)
     println!("{}, {}", alo1, alo);
 
-    fn plus_one(mut y : u8) -> u8 
+    fn plus_one(y : u8) -> u8 //função que recebe um u8 e devolve um u8
     {
-        y+=1;
-        y
+        y+1
     }
     let y:u8 = { //o escopo criado está devolvendo um valor para y;
         let x:u8 = 9;
         x*2 
     //uma linha de código sem ; é chamada expression e retorna um valor, caso coloquemos ; transformamos isso num statement, que n retorna valores
     };
+    {
     let y = plus_one(y);
-    println!("{}", y);
-} */
+    println!("{y}");
+    }
+    println!("{y}");
+}*/
 
 //CONDICIONAIS E LOOPS
-/* fn main() {
+/*fn main() {
     //if, else if and else expressions(ou seja, podem retornar valores)
     //só aceitam como argumento booleanos
     let b:bool = false;
@@ -147,31 +150,31 @@
             if a > b { a }
             else { b } 
             };
-        println!("{}", a);
+        println!("{a}");
     }
-    println!("{}", a);
+    println!("{a}");
 
     let mut cont = 0;
     let mut a = { //cria um escopo que retornará um valor para a
-    'fora: loop //inicia um loop com um "nome", uma label
-    {
-        let mut cont2 = 0;
-        loop //loop mais interno, não precisou do nome
-        {
-            println!("cont: {}, cont2: {}", cont, cont2);
-            
-            if cont2 == 10 { break } //break do loop mais interno
-            
-            if cont == 2 {
-                cont2 = 10;
-                println!("{}, {}", cont, cont2);
-                break 'fora cont+cont2 }
-                //esse break se referencia ao loop mais externo, além disso ele devolve um valor (cont + cont2) para a
+      'fora: loop //inicia um loop com um "nome", uma label
+      {
+          let mut cont2 = 0;
+          loop //loop mais interno, não precisou do nome
+          {
+              println!("cont: {}, cont2: {}", cont, cont2);
+              
+              if cont2 == 10 { break } //break do loop mais interno
+              
+              if cont == 2 {
+                  cont2 = 10;
+                  println!("{}, {}", cont, cont2);
+                  break 'fora cont+cont2 }
+                  //esse break se referencia ao loop mais externo, além disso ele devolve um valor (cont + cont2) para a
 
-            cont2+=2;
-        }
-        cont+=1;
-    } 
+              cont2+=2;
+          }
+          cont+=1;
+      } 
     };
     println!("{}", a);
 
@@ -194,7 +197,7 @@
         print!("{} ", j);
     }
     println!("");
-} */
+}*/
 
 //OWNERSHIP JUNTO AO BORROWING DE VARIÁVEIS
 /*use std::io;
@@ -205,11 +208,11 @@ fn main(){
     //copy, está apenas atribuindo o valor guardado por x a y, agr existem duas variáveis com o mesmo valor guardado, em espaços diferentes
     let x: u8 = 5;
     let y:u8 = x;
-    println!("{}, {}", x, y);
+    println!("{x}, {y}");
 
     //nesse caso se tentarmos utilizar s1 depois da atribuição em s2 teremos um error
     //isso porque, para que não existam dois ponteiros apontando para um mesmo endereço na heap, evitando 2 free's no mesmo endereço,
-    //s1 dá seu conteúdo para s2, e fica sem nada
+    //s1 dá seu conteúdo, endereço de memória, para s2 e perde o direito de acessá-lo, ownership
     let s1:String = String::from("Hello, world");
     let s2 = s1;
     println!("{}", s2);
@@ -262,14 +265,18 @@ fn main(){
 }*/
 
 //ENTRADA DE DADOS DO USUÁRIO
-/*#[macro_use]
+/*#[macro_use] //para poder usar as macros da crate text_io
 extern crate text_io;
 fn main(){
+    print!("Digite algo: "); //a macro print! n possui quebra de linha ao final, então precisa receber um flush para atualizar a stdout(saída padrão de dados, o que vemos no terminal)
+    std::io::Write::flush(&mut std::io::stdout()).unwrap(); //essa seria a forma mais bruta de fazer o flush
+    //outra forma seria trazendo stdout e flush(implementado pelo trait Write) pro escopo com use: use std::io{self, Write}
+    // e então: io::stdout().flush().unwrap();
     let mut leitura: String = "".to_string();
-    std::io::stdin()
-            .read_line(&mut leitura) //altera o valor de palavra com os dados recebidos na entrada
-            .expect("fail to read"); //caso read_line devolva um erro, então expect termina a execução e printa o aviso
-    print!("{}", leitura);
+    io::stdin()
+        .read_line(&mut leitura) //altera o valor de palavra com os dados recebidos na entrada
+        .expect("fail to read"); //caso read_line devolva um erro, então expect termina a execução e printa o aviso
+    print!("Aqui está sua frase em upper case: {}", leitura.to_uppercase());
     //tomar cuidado com read_line, pois ele insere oq foi lido ao final da string (append), logo se formos reutilizar leitura para
     //uma nova entrada de dados devemos "limpar" ela antes.
     leitura = "".to_string();
@@ -298,12 +305,18 @@ fn main(){
 
     //se adicionamos a crate text_io às nossas dependências do projeto, podemos utilizar macros para a leitura de dados
     //para utilizar as macros da text_io, sem mencioná-la com o path (text_io::) podemos utilizar a linha de cod acima de fn main
+    print!("Digite um número: ");
+    std::io::Write::flush(&mut std::io::stdout()).unwrap(); //flush
     let mut num: u32 = read!(); //read! faz um leitura para uma varíavel a qual especificamos o tipo previamente
     println!("{}", num);
+
+    println!("Digite seguindo o formato: num eh (número)");
     num = read!("num eh {}"); //nesse caso a leitura deve ser exatamente a descrita, caso contrário temos panic
     println!("o novo valor de num é: {}", num);
 
     let (a, b, c): (i32, i32, i32);
+    print!("Digite 3 números separados por espaço: ");
+    std::io::Write::flush(&mut std::io::stdout()).unwrap(); //flush
     scan!("{} {} {}", a, b, c); //diferente de read! podemos ler vários valores ao mesmo tempo com scan!
     println!("a: {}, b: {}, c: {}", a, b, c);
 }*/
@@ -324,7 +337,7 @@ fn main(){
 }*/
 
 //STRUCTS
-/* fn main(){
+/*fn main(){
     struct Estru{ //criação de uma estrutura
         nome : String,
         senha : String, 
@@ -332,10 +345,12 @@ fn main(){
         adulto : bool
     }
     //criação de um objeto da estrutura
-    let mut pessoa1: Estru = Estru { nome: String::from("Luan"),
-                     senha: String::from("123456"), 
-                     idade : 69, 
-                     adulto : false};
+    let mut pessoa1: Estru = Estru { 
+      nome: String::from("Luan"),
+      senha: String::from("123456"), 
+      idade : 69, 
+      adulto : false
+    };
     pessoa1.adulto = true;
     println!("{}\t{}\t{}\t{}\t", pessoa1.adulto, pessoa1.idade, pessoa1.nome, pessoa1.senha);
 
@@ -382,7 +397,7 @@ fn main(){
             self.h * self.l
         }
         fn can_hold(&self, r2 : &Retang) -> bool{ //vê se o segundo retângulo cabe dentro do primeiro
-            self.h > r2.h && self.l > r2.l
+            self.h >= r2.h && self.l >= r2.l
         }
         fn square(lado : u16) -> Retang{ //função para criar um quadrado facilmente, utilizada como um construtor
             Retang {                    //não conseguimos acessá-la com o ponto depois de r1, visto que &self não é argumento
@@ -410,14 +425,14 @@ fn main(){
 }*/
 
 //UTILIZAÇÃO DO MATCH
-/* fn main(){
+/*fn main(){
     let t: i32 = 1;
     //match funciona como um switch case, onde _ seria o caso default, o escopo de match tbm pode retornar valores
     let n = match t {
         z if z+1 == 4 => z*3, //z recebe o valor de t e, se a condição for satisfeita, a expressão depois da seta é devolvida
         z if (z*2)%4 == 0 => z/2,
         z if (z/3) == 3 => z+100,
-        _ => -77,
+        _ => -77, //default case
     };
     println!("{}", n);
 
@@ -441,11 +456,20 @@ fn main(){
         z @ w if (w/3)%3 == 0 => println!("o valor de z é: {}", z),
         _ => println!("nenhuma condição atendida!")
     }
-    //se alguma condição for atendida, à direita de @, a variável a esquerda recebe o valor de t
+    //se alguma condição for atendida, à direita de @, a variável à esquerda recebe o valor de t
+
+    let (x, y) = (false, 90);
+    match (x, y){
+         t @ (x2, _) if !x2 => println!("é {t:?}"),
+         t @ (_, y2) if !((y2 % 9) == 0) => println!("kkkkk {t:?}"),
+         (_, _) => println!("F")
+    }
+    //duas variáveis estão sendo avaliadas no match
 }*/
 
 //ENUMS
-/* fn main(){
+/*#[allow(unused)]
+fn main(){
     enum Exem{ //enums são conjuntos de tipos compostos, structs, que estão relacionadas de alguma maneira
         Ex1(u32), //tupple struct
         Ex2,    //struct sem dado associado
@@ -455,7 +479,7 @@ fn main(){
     match z { //match faz uma associação de z com o tipo da sua variante e executa a linha match que a corresponde!
         Exem::Ex1(_) => println!("É uma tupple struct!"),
         Exem::Ex2 => println!("É uma struct sem dado associado!"),
-        Exem::Ex3{ nome: s } => println!("É uma struct com uma string associada! Que tem: {}", s)
+        Exem::Ex3{ nome: s } => println!("É uma struct com uma string associada! Que tem: {s}")
     } 
 
     enum FormasGeo{ //enum de formas geométricas
@@ -541,17 +565,18 @@ fn main(){
     //corresponde, e os valores se predefinidos, e atribuições ao desconstruir o tipo enum e conseguir o conteúdo específico das variantes
 }*/
 
-//VEC E SEUS MÉTODOS    
+//VEC E SEUS MÉTODOS
 /*fn main(){
-    let mut v: Vec<u8> = vec![2, 3, 4, 5]; //vec! é uma macro que nos permite criar um Vec e escrever os seus primeiros elementos, como em um array estático
+    let mut v: Vec<u8> = vec![2, 3, 4, 5]; 
+    //vec! é uma macro que nos permite criar um Vec e escrever os seus primeiros elementos, como em um array estático
     println!("{:?}", v);
     v.push(10);
     println!("{:?}", v);
     println!("{:?}, {:?}", v.pop(), v); //v.pop() devolve o enum Option, pois caso tentemos retirar algo que não existe ele retorna None
-    v.reverse();
-    println!("{:?}", v); //reverte a ordem do vec
-    v.sort_unstable();
-    println!("{:?}", v); //ordena o vec
+    v.reverse(); //reverte a ordem do vec
+    println!("{:?}", v);
+    v.sort_unstable(); //ordena o vec
+    println!("{:?}", v);
     let mut vec:Vec<i32> = vec![-69; 10]; //inicializa um vetor com 10 posições todas com o valor -69
     for i in &vec {
         print!("{} ", i);
@@ -625,7 +650,7 @@ fn main(){
     }
 
     if let Some((a, b)) = hm.get_key_value(&String::from("Hello World!")){ //manda a tupla (key, value)
-        println!("{:?}", (a, b)); //a é a chave, b é o valor
+        println!("({a}, {b})"); //a é a chave, b é o valor
     }
 
     println!("pares em hm: {}", hm.len());
@@ -641,23 +666,17 @@ fn main(){
     }
 }*/
 
-//MODULARIZAÇÃO DE CÓDIGO, ESCREVENDO CÓDIGO EM ARQUIVOS SEPARADOS
-/*fn main()
-{
- //ver o package teste_modu
-}*/
-
-//LIDANDO COM ERROS
+//LIDANDO COM ERROS, TRABALHANDO COM ARQUIVOS
 /*fn main(){
-    //podemos utilizar a mcaro panic! quando queremos que o programa encerre totalmente como um erro
+    //podemos utilizar a macro panic! quando queremos que o programa encerre totalmente como um erro
     if false { panic!("pane no sistema"); } //troque false por true
 
     //existem em rust alguns metódos/funções que devolvem o enum Result, com ele podemos lidar com erros que recuperáveis, por exemplo ao abrirmos um arquivo
-    let file = std::fs::File::open("text.txt");
+    //let file = std::fs::File::open("text.txt").expect("n consegui fi, aí é F");
     //open devolve Result, caso seja possível abrir devolve um Ok("pasta"), caso não devolve Err(ERRO)
     //por sinal os Erros em Rust também são enums, e os tipos de erros são variantes da mesma
-    
-    use std::fs::File;
+
+    use std::{io::{self, Read, Write, ErrorKind}, fs::File};
 //    let f = match File::open("text.txt"){ //tenta abrir o arquivo
 //        Ok(file) => file, //retornando o arquivo para f
 //        Err(error) => panic!("F total, erro: {}", error) //caso retorne um erro, panic!
@@ -665,27 +684,41 @@ fn main(){
 //outra forma de lidar com o erro acima sem o uso do match é utilizar unwrap() ou expect(), que geram panic quando um erro é retornado
 //    let f = File::open("text.txt").unwrap();
 
+    let s: String = String::from("text.txt");
     //outra coisa que podemos fazer é criar um arquivo caso ele não exista, tratando o erro retornado quando o arquivo não existe
-    use std::io::ErrorKind;
-    use std::io::{self, Read};
-     let f = match File::open("text.txt"){
-        Ok(file) => file, //arquivo existia
-        Err(error) => match error.kind(){ //busca saber qual foi o erro
-                        ErrorKind::NotFound => match File::create("text.txt"){ //caso erro seja NotFound tentamos criar um arquivo
-                            //a função create também retorna entretanto um Result, que devemos tratar com um match
-                                                    Ok(arquivo_criado) => arquivo_criado, //arquivo novo criado e retornado para f
-                                                    Err(create_error) => panic!("F total: {:?}", create_error) //erro de criação de arquivo
-                                                },
-                        other_error => panic!("deu pane no sistema: {:?}", other_error)
-                        //qualquer erro diferente do NotFound vira panic!
-                    }
-    };
-
-    fn leitura_file() -> Result<String, io::Error>
     {
-        let mut file = File::open("text.txt")?; //se não conseguir abrir retorna o erro
+       let _f = match File::open(&s){
+          Ok(file) => file, //arquivo existia
+          Err(error) => match error.kind(){ //busca saber qual foi o erro
+                          ErrorKind::NotFound => match File::create(&s){ //caso erro seja NotFound tentamos criar um arquivo
+                              //a função create também retorna entretanto um Result, que devemos tratar com um match
+                                                      Ok(arquivo_criado) => arquivo_criado, //arquivo novo criado e retornado para f
+                                                      Err(create_error) => panic!("F total: {:?}", create_error) //erro de criação de arquivo
+                                                  },
+                          other_error => panic!("deu pane no sistema: {:?}", other_error)
+                          //qualquer erro diferente do NotFound vira panic!
+                      }
+      };
+    }//quando sair desse escopo o arquivo será fechado!!
+    
+    {    //considerando que chegamos até aqui, podemos garantir que o arquivo text.txt existe!
+
+        //depois de alguns teste, eu recomendaria que fosse usado sempre o File::options para qualquer operação com arquivos
+        //isto porque arquivos que são apenas abertos não podem ser escritos, mas com o options isso é facilmente contornado
+        //além de que podemos usar os métodos create, open, read, write e append com ele
+        let mut f = File::options().append(true).open("text.txt").expect("falha ao abrir o arquivo");
+        //podemos habilitar mais de uma opção ao mesmo tempo para o tipo de operação que vamos fazer com o arquivo
+        //ou seja ler, escrever e append ao mesmo tempo, true. OBS: append habilita a escrita automaticamente
+        //caso coloquemos apenas write no arquivo a escrita começa do início, diferente do append que começa do final
+        f.write(b"just a text\n").expect("naum cunsigo escrever :O");
+    }
+    let uepa = leitura_file(&s).unwrap();
+    println!("{uepa}");
+    fn leitura_file(file: &str) -> Result<String, io::Error> //lendo o arquivo que criamos
+    {
+        let mut f = File::options().read(true).open(file)?; //se não conseguir abrir retorna o erro
         let mut s = String::new();
-        file.read_to_string(&mut s)?; // se não conseguir ler retorna o erro
+        f.read_to_string(&mut s)?; // se não conseguir ler retorna o erro
         Ok(s)
         //o operador ? funciona quando queremos fazer uma função que retorna o enum Result ou Option
         //ele funciona como um match que retorna os casos de erro, ou none, sem precisarmos tratá-los com um match
@@ -701,13 +734,25 @@ fn main(){
     }
 }*/
 
+//MODULARIZAÇÃO DE CÓDIGO, ESCREVENDO CÓDIGO EM ARQUIVOS SEPARADOS
+/*fn main(){
+    //ver o package teste_modu, contém exemplos de modularização em módulos e arquivos diferentes
+}*/
+
+
 //UTILIZAÇÃO DE TIPOS GENÉRICOS
 /*#![allow(unused)] // faz com que os warnings de não uso desapareçam
-use basics::{*};
+use basics::*;
+//os arquivos main.rs e lib.rs sçao definidos por padrão em rust com o nome da crate, projeto em si,
+//então com a linha acima estamos adicionando todos os módulos, funções, métodos, structs, enums, traits no arquivo lib.rs
+//perceba que isto apenas traz para o escopo de main aquilo que está fora de um mod, visto que para estes teremos que acessar pelos módulos
 fn main()
 {
+    sla::sla2(); //acessando uma função dentro de um mod
+    sla_man::sla_man_2(); //acessando uma função dentro de um mod em lib
     let a: Teste<i32> = Teste{ nome: String::from("Luan"), value: -90};
     println!("{}, {}, fn testando: {}", a.nome, a.value, a.testando());
+    a.func("só uma string que implementa Debug".to_owned());
     let b = Teste{ nome: "lenza".to_string(), value: "lenza".to_string()}; //b será do tipo Teste<String>
     println!("{}", b.sao_iguais());
     
@@ -734,9 +779,9 @@ fn main()
     let asd: i32 = 90;
     let dsa: String = String::from("oi, meu bro");
     let aa = (0, 0, 0);
-    prt(&asd); prt(&dsa); println!("");
-    prt2(&asd); prt2(&aa); println!("");
-    prt3(&dsa); println!("");
+    prt(&asd); prt(&dsa);
+    prt2(&asd); prt2(&aa);
+    prt3(&dsa);
 
     let maior = cmp(("alo", 89), ("alo", 90));
     println!("{:?}", maior);
@@ -760,9 +805,8 @@ fn main()
     println!("sao iguais? {}\nvida eh maior? {}", vida == morte, vida > morte);
     //podemos fazer as comparações, pois derivamos os traits PartialEq( == ), PartialOrd( > )
 }
-
 //agora que chegamos ao ponto de implementar traits mais específicos para os nossos tipos, o derive pode ser melhor explicado
-//derive é uma forma de automaticamente implementar alguns traits básicos automaticamente, sem precisar fazer impl Debug for (...)
+//derive é uma forma de automaticamente implementar alguns traits básicos, sem precisar fazer impl Debug for (...)
 //do nosso tipo, a implementação obviamente será básica e teremos de implementar manualmente caso algo mais elaborado seja necessário
 //com o derive abaixo estamos implementando ao tipo Teste<T> os traits Debug, PartialEq e PartialOrd
 #[derive(Debug, PartialEq, PartialOrd)] 
@@ -776,29 +820,42 @@ impl<T> Teste<T>{ //implementação para qualquer tipo
     //recebe &self para não retirar a ownership do objeto e devolve um &T, pois se trata de um tipo genérico o qual ainda não implementamos
     //a cópia do seu valor, ou seja, sem & estamos movendo sua ownership, para que isso não ocorra passamos apenas a referência do valor
     }
-    fn func<G>(self, other: G) {  } //apenas func possui dois tipos genéricos, visto que G foi criado nela
+    fn func<G>(&self, other: G) //apenas func possui dois tipos genéricos, visto que G foi criado nela
+        where G: std::fmt::Debug //o tipo do argumento recebido por other deve implementar Debug
+    {
+        println!("{other:?}");
+    } 
 }
- impl Teste<String> { //impl apenas para o caso do T ser uma String
-     fn sao_iguais(&self) -> bool{
-         if self.nome == self.value{
-             return true
-         }
-         false
-     }
- } */
+impl Teste<String> { //impl apenas para o caso do T ser uma String
+    fn sao_iguais(&self) -> bool{
+        if self.nome == self.value{
+            return true
+        }
+        false
+    }
+}
+mod sla{ //não precisamos usar pub aqui, pois sla está no mesmo path que main.rs, logo eles são públicos entre si
+    //está dentro de um módulo, então devemos utilizar a keyword pub para torná-la visível para
+    //todos que estão em um path(caminho desde o diretório base da crate) maior ou igual a sla
+    pub fn sla2(){
+        println!("fala, fi");
+    }
+}*/
 //a implementação do trait das outras structs utilizadas na main estão no arquivo lib.rs
 
 //LIFETIMES E LIFETIMES GENÉRICOS
-/*fn main(){
+/*#[allow(unused)]
+fn main(){
     //lifetime é o tempo que leva para a variável sair de escopo e ter seu valor "dropado", free
     //se tentamos usar uma referência a um valor que saiu de escopo vamos ver que o referente 
-    //n viveu o suficiente 
-    let s = String::from("alo");
+    //n viveu o suficiente, isto evita dangling references, ponteiros que apontam para memória que foi liberada
+    let s = String::from("opa fiote");
     let b;
     {
-        let t = "ala".to_string();
+        let t = "opa fi".to_string();
         b = longest(&s, &t);
         println!("{}", b);
+        println!("{}", one_parameter(b));
     }
     //println!("{}", b);
     //se o println de b estivesse fora do menor escopo teríamos um erro,
@@ -809,17 +866,42 @@ impl<T> Teste<T>{ //implementação para qualquer tipo
         //'x é um lifetime genérico que devemos passar para o compilador do Rust
         //assim ele pode saber quando o valor retornado pela função vai sair de escopo
         //'x será igual ao menor lifetime dos argumentos recebidos
-        if s > t{
+        
+        if s.len() > t.len(){
             return s
         }
         t
     }
     //existem 3 regras para a inferência dos lifetimes pelo compilador do Rust
-    //1: para cada referência que é argumento da função haverá será inferido um lifetime diferente
+    //1: para cada referência que é argumento da função será inferido um lifetime diferente
     //2: se houver apenas um lifetime inferido então o lifetime do output será o mesmo que o da entrada
-    //3: se for um método, com self nos argumentos, o lifetime da saída será o mesmo que o do objeto que chamou o mét
-}
-*/
+    //3: se for um método, com self nos argumentos, o lifetime da saída será o mesmo que o do objeto que chamou o método
+    fn one_parameter(s: &str) -> &str{
+    //esse tipo de função n precisaria do lifetime 'a, por causa da regra 2 
+        s
+    }
+    struct Sla<'a>(&'a str);
+    impl<'a> Sla<'a>{
+        //fn func(&self, s: &str) -> &str { s }
+        //segundo a regra 3 o lifetime de um método segue o lifetime de &self, mas estamos
+        //retornando s, logo o lifetime do retorno n bate com o de &self, e, então, temos um erro
+        //tire os comentários da função para ver o erro
+    }
+}*/
+
+//MAIN COM RESULT COMO RETORNO
+/*use std::io::{self, prelude::*};
+fn main() -> io::Result<()>{
+    //essa forma de escrever a função main é bem útil quando temos várias funções que devolvem
+    //Results, pois conseguimos usar o operador ? e descartar os milhares de unwraps
+    //erros vão ser devolvidos pelo ? e sucessos vão devolver o que estiver em Ok()
+    let mut s = String::new();
+    let bytes_r = io::stdin().read_line(&mut s)?;
+    let bytes_w = io::stdout().write(s.as_bytes())?; //mesmo efeito que a macro println!
+    println!("Quantidade de bytes lidos e escritos: {bytes_r} {bytes_w}");
+    Ok(()) //Precisamos devolver um Ok(()) ao final da main para dizer que ela encerrou o processo corretamente
+    //semelhante ao return 0; de C
+}*/
 
 //UTILIZAÇÃO DO DEREFERENCE OPERATOR (" * ")
 /*fn main(){
@@ -833,3 +915,8 @@ impl<T> Teste<T>{ //implementação para qualquer tipo
     }
     println!("{:?}", a);
 }*/
+
+fn main() -> std::io::Result<()> {
+
+    Ok(())
+}
