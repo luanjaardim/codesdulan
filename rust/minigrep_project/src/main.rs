@@ -1,5 +1,20 @@
-use minigrep_project::*; //imoprtando as funções de lib.rs
+use minigrep_project::*; //importando as funções de lib.rs
 
+fn main() {
+    let config = Config::build(env::args())
+                                .unwrap_or_else(
+                                    | err | { 
+                                        eprintln!("Error: {err}");
+                                        process::exit(1); 
+                                    }
+                                );
+    if let Err(err) = run2(config){
+        eprintln!("Error: {err}");
+        process::exit(1);
+    }
+}
+
+/* SEGUNDA IMPLEMENTAÇÃO
 //a função main ficou encarregada apenas de lidar com os erros vindo das outras funções, 
 // printando em stderr caso ocorram, e receber os argumentos com args
 fn main() {
@@ -22,4 +37,4 @@ fn main() {
         eprintln!("Error: {}", err);
         process::exit(1); //terminando a execução do programa, com erro
     }
-}
+}*/

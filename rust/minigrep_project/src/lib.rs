@@ -12,7 +12,7 @@ pub struct Config{ pub filename: String, pub word: String, pub case: bool }
 impl Config{
     //recebe os argumentos da linha de comando e retorna um objeto Config
 
-    pub fn new(args: &[String]) -> Result<Config, &str> {
+    pub fn new(args: &[String]) -> Result<Config, &'static str> {
         if args.len() < 3 {
             return Err("Argumentos insuficientes")
         }                                 //clone cria uma nova string, idêntica
@@ -20,6 +20,27 @@ impl Config{
                                 word: args[2].clone(),  //usa clone para n pegar a ownership
                                 case: env::var("CASE").is_err() //se for um erro retorna true, ou seja n passou CASE
                                 };
+        Ok(c)
+    }
+
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str>{
+        //using iterators to get the args from command line
+        let (filename, word): (String, String);
+        args.next();    
+        filename = match args.next() {
+            Some(filename) => filename,
+            None => return Err("Argumentos insuficientes")  
+        };
+        word = match args.next() {
+            Some(word) => word,
+            None => return Err("Argumentos insuficientes")  
+        };
+        let case = env::var("CASE").is_ok();
+        let c = Config{
+            filename,
+            word,
+            case
+        };
         Ok(c)
     }
 }
@@ -67,6 +88,32 @@ fn search_case_insensitive<'a>(word: &str, contents: &'a str) -> Vec<&'a str>{
         }
     }
     result
+}
+
+//run2 and search2 were implemented after the another ones, the build in impl Config too
+//using them at the first implmentation of the code in main
+pub fn run2(config: Config) -> Result<(), Box<dyn Error>>{
+    let mut cnt = 1;
+    let content = fs::read_to_string(config.filename)?;
+    let encountered = search2(&config.word, &content, config.case);
+    for line in encountered{
+        println!("{cnt}: {line}");
+        cnt += 1;
+    }
+    Ok(())
+}
+fn search2<'a>(word: &str, content: &'a str, case: bool) -> Vec<&'a str>{
+    if case {
+        let word = word.to_lowercase();
+        return content.lines()
+                      .filter(|line| line.to_lowercase().contains(&word))
+                      .collect()
+    }
+    else {
+        content.lines()
+               .filter(|line| line.contains(word))
+               .collect()
+    }
 }
 
 //TESTES//
