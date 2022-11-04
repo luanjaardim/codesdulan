@@ -1034,7 +1034,162 @@ struct Sla2<T>
     Ok(())
 }*/
 
-fn main() -> std::io::Result<()> {
+//WORKING WITH SMART POINTERS
+/*use std::rc::{Rc, Weak};
+use std::cell::RefCell;
+fn main(){
+    let x = Box::<i32>::new(5); //the smart pointer Box allocates space in the heap
+    let y = &5;
+    println!("{} {}", x, *x); 
+    println!("{} {}", y, *y);
+    //Box implements the Deref trait, so it acts just like a reference further Box implements Drop trait
+    //that deallocates the memory on heap when it goes out of the scope, and the memory on stack(the address itself)
+
+    //we can use Box to implement recursive data types:
+    enum List<T>{
+        Node(T, Box< List<T> >), //whitout Box won't compile
+        Null
+    }
+    let list = List::Node(10, Box::new(List::Node(20, Box::new(List::Null))));
+    //the data above is a Node inside another Node until reach a Null, using Box for each heap alocation
+
+    //walking on the list using if let
+    if let List::Node(num, list2) = list{
+        println!("{num}");
+        if let List::Node(num2, list3) = *list2{
+            println!("{num2}");
+            if let List::Null = *list3{
+                println!("the end of the list");
+            }
+        }
+    }
+    let mut n_list = List::Node(10, Box::new(List::Node(20, Box::new(List::Node(30, Box::new(List::Null))))));
+    //walking on the list using while let
+    while let List::Node(n_num, n_list2) = n_list{
+        println!("{n_num}");
+        n_list = *n_list2; //acessing the element in Box
+    }
+    println!("end of the list");
+
+    //Box still can't handle with the next problem, we want to acess 'a' with 'b' and 'c'
+    //but Box own the address it's pointing to, so to do that we have Rc<T> smart pointer...
+    // let a = List::Node(1, Box::new(List::Null));
+    // let b = List::Node(2, Box::new(a));
+    // let c = List::Node(3, Box::new(a));
+
+    use List_Rc::{Node, Null};
+    enum List_Rc<T>{
+        Node(T, Rc<List_Rc<T>>),
+        Null
+    }
+    let a = Rc::new(Node(1, Rc::new(Node(2, Rc::new(Null)))));
+    let b = Rc::new(Node(10, Rc::clone(&a)));
+    let mut c = Rc::new(Node(20, Rc::clone(&a)));
     
+    //walking through the c list
+    while let Node(val, list) = &(*c){ //we are catching the reference of what is inside Rc with the while let
+        println!("{val}");
+        c = Rc::clone(list); //getting the reference of inner lists
+    }
+    println!("end of the list");
+
+    //the problem with the Rc smart pointer is that we can't change the values it's apointing to
+    let a = Rc::<f64>::new(1.0);
+    // *a += 2.0;
+    println!("{a}");
+
+    //a way to have multiple owners and possible change the values on heap is using RefCell     
+    //the RefCell smart pointer can borrow some value as mutable, or immutable, even if it's immutable
+    let var = RefCell::new(2); //var is immutable
+    {
+    let mut refe = var.borrow_mut(); //refe needs to be mut to receive a mutable reference
+    *refe += 2;
+    }
+    let refe_immut = var.borrow(); //creating a immutable reference
+    println!("{}", *refe_immut);
+    //RefCell has a particularity to "break" the borrowing rules of rust at the compile time,
+    //instead it should respect them at the runtime...
+    //at any given time, you can have either (but not both) one mutable reference or any number of immutable references
+    //if, at runtime, we break this rule so the program panic, this is the reason that refe is inside an inner scope
+    //when it goes out refe is deallocated, then we can immut borrow to refe_immut
+
+    //another way to use RefCell is along with Rc:
+    use List_RefRc::{Dot, Nil};
+    #[derive(Debug)]
+    enum List_RefRc<T>{
+        Dot(T, Rc< RefCell< List_RefRc< T > > >),
+        Nil
+    }
+    let list = Dot(10, Rc::new(RefCell::new(Dot(20, Rc::new(RefCell::new(Nil))))));
+    let list_end = Dot(30, Rc::new(RefCell::new(Nil)));
+    if let Dot(_, n) = &list{
+        //n -> &Rc<RefCell<Dot>>
+        //(*n) -> Rc<RefCell<Dot>>
+        //(*(*n)) -> RefCell<Dot>
+        //((*(*n)).borrow()) -> Ref<Dot> //Ref<> acts like an immut reference
+        //(*((*(*n)).borrow())) -> Dot
+        //&((*(*n)).borrow()) -> &Dot
+        if let Dot(_, n2) = &(*((*(*n)).borrow())){
+            //n2 -> &Rc<RefCell<Nil>>
+            //(*n2) -> Rc<RefCell<Nil>>
+            //(*(*n2)) -> RefCell<Nil>
+            //(*(*n2)).borrow_mut() -> RefMut<Nil> //RefMut<> acts like a mut reference
+            let mut tmp = (*(*n2)).borrow_mut();
+            *tmp = list_end;
+        }
+    }
+    println!("{list:?}");
+
+    //but, now, using the RefCell with the Rc smart pointer we can create a cycle
+    //that has, as consequence, a memory leak:
+    use MemLeak::{Ta, Tb};
+    #[derive(Debug)]
+    enum MemLeak{
+        Ta(RefCell< Rc< MemLeak > >),
+        Tb
+    }
+    let m1 = Rc::new(Ta(RefCell::new(Rc::new(Tb))));
+    let m2 = Rc::new(Ta(RefCell::new(Rc::clone(&m1))));    
+    if let Ta(refe) = &*m1{
+        *(*refe).borrow_mut() = Rc::clone(&m2);
+    }
+    //println!("{m1:?}");  //uncomment this to stackoverflow
+    
+    //now we have a cycle, a memory leak will occurs
+    //a way to evade this is by the use of Weak<T>, a downgrade of Rc
+    //Weak<T> does not own the data it apoints to, and will stay alive
+    //while the strongers(Rc) are alive, so:
+
+    //thinking like a tree:
+    #[derive(Debug)]
+    struct Noddle{
+        parent: RefCell< Weak< Noddle > > ,//weak conection with it's parent
+        child: RefCell< Vec< Rc< Noddle > > >    //strong conection with it's child
+    }
+    //if a child goes out of scope, the parent can remain
+    //but if the parent goes out the child can't remain allocatedd
+
+    let con1 = Rc::new(Noddle{ parent: RefCell::new(Weak::new()), child: RefCell::new(vec![]) });
+    let con2 = Rc::new(Noddle{ parent: RefCell::new(Weak::new()), child: RefCell::new(vec![Rc::clone(&con1)])} );
+    *((*con1).parent.borrow_mut()) = Rc::downgrade(&con2);
+    println!("{con1:?}\n{con2:?}");
+
+    //now we still have a cycle, but weak from one direction
+    //when a cyle of Rc's occurs both strong_count will permanently be 1, because
+    //they point each other, so the memory won't be deallocated
+    //but working with Weak that can't happen, Weak doesn't guarantee that what he is 
+    //pointing will continue allocated, as the Rc, but while there are Rc's pointing
+    //to that place, Weak will exist.
+    println!("{} {}", Rc::strong_count(&con2), Rc::weak_count(&con2)); 
+    println!("{} {}", Rc::strong_count(&con1), Rc::weak_count(&con1));
+    
+    //how do we know that weak still points to a valid address?
+    //the method upgrade:
+    println!("{:?}\n{:?}", (*((*con1).parent.borrow())).upgrade(), (*((*con2).parent.borrow())).upgrade()) 
+    //upgrade returns an option, if weak is a dangling pointer it returns None
+}*/
+
+fn main() -> std::io::Result<()> {
+
     Ok(())
 }
