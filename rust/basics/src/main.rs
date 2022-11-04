@@ -903,6 +903,21 @@ fn main() -> io::Result<()>{
     //semelhante ao return 0; de C
 }*/
 
+//UTILIZAÇÃO DO DEREFERENCE OPERATOR (" * ")
+/*fn main(){
+    let mut a = vec![0; 5];
+    let x = &mut a[0];
+    *x+=9;
+    for j in &mut a
+    {
+        *j+=3; //para realizar operções carcterísticas de um inteiro, ou seja, com o inteiro 3, devemos transformar o tipo de j 
+               //que no moemento é &mut i32 para um i32, através do operador *
+    }
+    println!("{:?}", a);
+
+    //o * pode ser utilzado também em tipos que implementam o trait Deref, como Box e Rc, que vão ser vistos no futuro 
+}*/
+
 //WORKING WITH CLOSURES
 /*use std::thread;
 fn main() {
@@ -963,20 +978,63 @@ struct Sla2<T>
     sla_manin: fn(T, T) -> T //field as a fn, can change, it accepts closures too
 }*/
 
-//UTILIZAÇÃO DO DEREFERENCE OPERATOR (" * ")
-/*fn main(){
-    let mut a = vec![0; 5];
-    let x = &mut a[0];
-    *x+=9;
-    for j in &mut a
-    {
-        *j+=3; //para realizar operções carcterísticas de um inteiro, ou seja, com o inteiro 3, devemos transformar o tipo de j 
-               //que no moemento é &mut i32 para um i32, através do operador *
+//WORKING WITH ITERATORS
+/*fn main() -> std::io::Result<()>{
+    let mut v = vec![1, 2, 3];
+    let iterator = v.iter();
+    for j in iterator{
+        print!("{j} ");
+        //j += 1; //using the iter() method the iterator returns a immutable reference, doesn't take ownership
     }
-    println!("{:?}", a);
+    println!("\n{v:?}");
+
+    let iterator = v.iter_mut();
+    for j in iterator{
+        *j += 1; //the iter_mut() method returns a mutable reference, doesn't take ownership  
+        print!("{j} ");
+    }
+    println!("\n{v:?}");
+
+    let iterator = v.into_iter();
+    for mut j in iterator{
+        j += 1; //the into_iter() method takes the ownership of v and return it's elements 
+        print!("{j} ");
+    }
+    println!("");
+
+    let v: Vec<i32> = vec![1, 2, 3, 4, 5];
+    let sum: i32 = v.iter().sum(); //sum consumes an iterator and iterate over it, giving back the total sum of it's elements
+    println!("{sum}");
+    
+    //the map() method receive an iterator and returns another one
+    //changing each element by action of a closure
+    //and the collect() turns the iterator into a collection, in this case a Vec
+    let new_v: Vec<_> = v.iter().map(| x | x*100 ).collect();
+    println!("{new_v:?}");
+
+    //the filter() method generates another iterator, selecting elements from the original one for the new one
+    let iterator = new_v.into_iter().filter(| x | (*x % 200) == 0 );
+    for i in iterator{
+        print!("{i} ");
+    }
+    println!("");
+
+    //iter::zip() turns two colections into a iterator of pairs
+    let (ar1, ar2) = ([1, 2, 3], [4, 5, 6]);
+    let zipado = std::iter::zip(ar1, ar2);
+    let mut zipado_v2 = zipado.clone(); //zipado will be consumed by the for
+    for (i, j) in zipado{
+        println!("i: {i}, j: {j}");
+    }
+
+    println!("{:?}", zipado_v2.next()); //next is the main method of the iterators, walking through the iterator and returning it's items
+    let mut zipado_v2 = zipado_v2.skip(2); //used to walk through the iterator a certain "distance", number of iterations
+    println!("{:?}", zipado_v2.next());
+
+    Ok(())
 }*/
 
 fn main() -> std::io::Result<()> {
-
+    
     Ok(())
 }
