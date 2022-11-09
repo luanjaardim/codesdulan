@@ -410,6 +410,14 @@ fn main(){
     println!("calculando a área através de um método: {}", r1.area());
     println!("r2 cabe em r1: {}", r1.can_hold(&r2));
     println!("{:#?}", r2); //{:#?} uma forma mais elegante de printar structs
+    
+    //podemos também fazer a desestruturação de uma struct em partes:
+    struct Opa{x: f64, y: i32 }
+    let opa = Opa{x: 2.0 , y: 5};
+
+    let Opa{ x: a, y: b } = opa;
+    let Opa{ x, y } = opa;
+    println!("{a} {b} {x} {y}");
 }*/
 
 /* fn main(){
@@ -975,7 +983,7 @@ struct Sla<F: Fn(i32, i32) -> i32>{
 struct Sla2<T>
 {
     nome: String,
-    sla_manin: fn(T, T) -> T //field as a fn, can change, it accepts closures too
+    sla_manin: fn(T, T) -> T //field as a function pointer, can change, it accepts closures too
 }*/
 
 //WORKING WITH ITERATORS
@@ -1189,7 +1197,199 @@ fn main(){
     //upgrade returns an option, if weak is a dangling pointer it returns None
 }*/
 
-fn main() -> std::io::Result<()> {
+//WORKING WITH THREADS
+/*use std::{io, thread, time::Duration, sync::{mpsc, Mutex, Arc}};
+fn main() -> io::Result<()>{
+    //THIS TOPIC HAS SUBTOPICS, COMMENT THE OTHERS TO RUN BEFORE RUN    
+    /*//TOPIC 1:
+    thread::spawn(|| {
+        for i in 1..=9{
+            println!("printing from new thread the number: {i}");
+            thread::sleep(Duration::from_millis(1));
+        }
+    });
+    for i in 1..=5{
+        println!("printing from main thread the number: {i}");
+        thread::sleep(Duration::from_millis(1));
+    }
+    //here we can see that depending how the scheduler from OS
+    //alternates the thread executing we have a different result
+    //but, in major, the spawned thread doesn't complete all it's iterations
+    //that's because main ended first and everything inside got deallocated
+    */
+    /* //TOPIC 2:
+    let ret = thread::spawn( || {
+        for i in 1..=9{
+            println!("printing from new thread the number: {i}");
+            thread::sleep(Duration::from_millis(1));
+        }
+    });
+    for i in 1..=5{
+        println!("printing from new thread the number: {i}");
+        thread::sleep(Duration::from_millis(1));
+    }
+    ret.join().unwrap(); 
+    //when called .join() the main cannot continue it's execution
+    //main is waiting for the end of spawned
+    println!("end of the thread spawned execution, main continues");
+    */
+    /*//TOPIC 3:
+    thread::spawn( || {
+        for i in 1..=9{
+            println!("printing from new thread the number: {i}");
+            thread::sleep(Duration::from_millis(1));
+        }
+    }).join().unwrap(); 
+    //this code diferently from the above has the join before the for
+    //loop in main, this loop only executes at the end of thread execution
+    for i in 1..=5{
+        println!("printing from new thread the number: {i}");
+        thread::sleep(Duration::from_millis(1));
+    }*/
+    /*//TOPIC 4:
+    //now we are working on a way of communication between threads
+    let v = vec![1, 2, 3];
 
+    let ret = thread::spawn(move || { println!("{v:?}"); v });
+    //here we use the move keyword to transfer the ownership of v to the thread
+    //println!("{v:?}"); //v was moved
+
+    let v = ret.join().unwrap(); //but we can bring v back to main
+    println!("{v:?}"); //and then get it's onwership in main again
+    */
+    /*//TOPIC 5:
+    let (tx, rx) = mpsc::channel(); //mpsc -> multiple producers, single consumer
+    //creating a channel of comunication between threads
+    //it returns a tupple, the first is a producer and the second a consumer
+    let mut v = vec![1, 2, 3];
+    thread::spawn(move || { //moving v and tx
+        v.push(4);  
+        tx.send(v).unwrap();//waiting for someone to receive the message
+        //println!("{v:?}"); //v was moved at send
+    });
+    let v_recv = rx.recv().unwrap();//waiting for someone to send the message
+
+    //send() will return a Err if the receiver was dealocated.
+    //recv() will return a Err if the sender was dealocated.
+    //note that if none sender send a message recv() won't stop waiting,
+    //we can use try_recv() for just attempt to receive the message,
+    //if there wasn't any message on the channel the thread continues it's execution
+    
+    println!("{:?}", v_recv);
+
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        for val in v_recv{  //iterating over the elements in v_recv and sending them
+            thread::sleep(Duration::from_secs(1));
+            tx.send(val).unwrap();
+        }
+    });
+    for receive in rx{ //using rx as a iterator, it will wait for messages just like .recv()
+        println!("Received: {receive}");
+    }
+    */
+    /*//TOPIC 6:
+    let (tx, rx) = mpsc::channel();
+    let tx2 = tx.clone(); 
+    //as mentioned above, mpsc -> multiple producers so we can clone tx
+    
+    thread::spawn(move || { //thread using tx
+        for i in 1..=5{
+        let s = format!("from tx:  {i}");
+        tx.send(s).unwrap();
+        thread::sleep(Duration::from_millis(1));        
+        }
+    });
+    thread::spawn(move || { //thread using tx2
+        for i in 1..=5{
+        let s = format!("from tx2: {i}");
+        tx2.send(s).unwrap();
+        thread::sleep(Duration::from_millis(1));        
+        }
+    });
+    for received in rx{ //receiving messages from both threads
+        println!("{received}");
+    }*/
+    /*//TOPIC 7:
+    //another way of communication between threads, without sending or receiving messages,
+    //is through shared memory and manipulating it, one at time.
+    let m = Mutex::new(0); 
+    //mutex protects a shared memory from being accessed by multiple threads
+    {
+        *m.lock().unwrap() += 10; 
+        //when we want to access that region we need to lock() the mutex,
+        //if someone is already inside the shared region the thread wait for it's turn
+        //a good pratice is unlock() the mutex, but in rust when the variable that
+        //locked the mutex goes out of scope the mutex is unlocked
+    }
+    println!("{}", *m.lock().unwrap());
+
+    //when working with threads, it's required that any thread can access that shared memory,
+    //one at time, so every thread must have the ownership of the mutex, but Rc smart pointer
+    //does not the job with multithreading, for that we have Arc, the version of Rc that works with threads:
+    let m = Arc::new(Mutex::new(0));
+    //now we can share the address of the shared memory
+    let mut v_handle = vec![];
+    for id in 0..10{
+        let shared_add = Arc::clone(&m);
+        let handle = thread::spawn(move || {
+            println!("thread {id} in execution...");
+            let mut num = (*shared_add).lock().unwrap(); //adds the id to the shared memory 
+            *num += id;
+            drop(num); //dropping num and unlocking the mutex, we could just let it goes out of scope too
+            //another option is: Mutex::unlock(num), does the same of dropping the guard(num) and unlock it
+            id
+        });
+        v_handle.push(handle);
+    }
+    for handle in v_handle{
+        println!("thread {} finished it's execution!", handle.join().unwrap());
+    }
+    println!("at the end we have the sum: {}", (*m).lock().unwrap());
+    //a important thing to see is that Mutex, juts like the Arc and Rc, is similar to RefCell,
+    //guaranteeing interior mutability, so we have to be cautious when using them together
+    //because there are chances of deadlock, two threads that wait for each other permanently
+    */
+    /*//TOPIC 8:
+    //we can use both given ways of communicating between threads
+    //a simple fatorial with threads:
+    let mutex = Arc::new(Mutex::<u128>::new(1)); //updating the final result at each thread
+    let (tx, rx) = mpsc::channel(); //communicating the end of each threads execution
+
+    println!("Please enter a number: ");
+
+    let mut s = String::new();
+    std::io::stdin().read_line(&mut s).expect("read error");
+    let fact: u8 = match s.trim().parse() {
+        Ok(num) => num,
+        Err(_) => { println!("Not a u8!"); std::process::exit(1); }
+    };
+    
+    if fact < 2 { *((*mutex).lock().unwrap()) = 1; }
+    else if fact > 20 { println!("too large."); std::process::exit(0); }
+    else { 
+        for id in 2..=fact{
+            let mutex_thread = Arc::clone(&mutex);
+            let tx_thread = tx.clone(); 
+            thread::spawn(move || {
+                *((*mutex_thread).lock().unwrap()) *= id as u128;
+                tx_thread.send(id).unwrap();
+            });
+        } 
+    }
+    drop(tx); //dropping tx because rx will continue to wait for a message from him
+    for received in rx{
+        println!("thread {received} finished.");
+    }
+    println!("{fact}! = {}", (*mutex).lock().unwrap());
+    //without the join() we can make the execution order more random,
+    //that's because the main thread won't wait for the end of each thread execution,
+    //and will start to create all the threads, just then wait till all threads are finished
+    */
+    Ok(())
+}*/
+
+fn main() -> std::io::Result<()> {
+        
     Ok(())
 }
