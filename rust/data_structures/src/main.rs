@@ -12,9 +12,17 @@ fn main(){
 
     //next method returns an option of a LinkedList, so after dealing with Some(T) or None
     //we can push/pop over the list
-    let new_list =  list.next()//returns Some(3 -> 2 -> 1)
+    let new_list =  list.advance()//returns Some(3 -> 2 -> 1)
                                     .unwrap() //returns 3 -> 2 -> 1
-                                    .next() //returns Some(2 -> 1)
+                                    .advance() //returns Some(2 -> 1)
                                     .unwrap(); //returns 2 -> 1
     println!("{new_list:?}\n{list:?}");
+    for i in list.clone().into_iter().map(|x| x*2 ){
+        print!("{i} ");
+    }
+    println!("");
+    for i in list.clone().into_iter().filter(|x| x%2 == 0 ){
+        print!("{i} ");
+    }
+    println!("");
 }

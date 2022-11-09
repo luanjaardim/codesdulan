@@ -1,16 +1,17 @@
 use std::rc::Rc;
 use std::cell::RefCell;
-#[derive(Debug)]
-pub struct LinkedList (Rc<RefCell<Node>>);
 
-#[derive(Debug)]
-struct Node{
-    next: Option<Rc<RefCell<Node>>>,
-    value: i32
+#[derive(Debug, Clone)]
+pub struct LinkedList<T: Copy>(Rc<RefCell<Node<T>>>);
+
+#[derive(Debug, Clone)]
+struct Node<T> where T: Copy{
+    next: Option<Rc<RefCell<Node<T>>>>,
+    value: T
 }
 
-impl LinkedList{
-    pub fn new(v: i32) -> Self {
+impl<T> LinkedList<T> where T: Copy{
+    pub fn new(v: T) -> Self {
         LinkedList(
             Rc::new(
                 RefCell::new(
@@ -22,7 +23,7 @@ impl LinkedList{
             )
         )
     }
-    pub fn push(&self, v: i32) -> Self {
+    pub fn push(&self, v: T) -> Self {
         let mut tmp = (*((*self).0)).borrow_mut(); 
         let a = match &tmp.next {
             None => {
@@ -41,10 +42,36 @@ impl LinkedList{
     fn pop(&self) {
         todo!();
     }
-    pub fn next(&self) -> Option<Self> {
+    pub fn advance(&self) -> Option<Self> {
         match &((*((*self).0)).borrow().next) {
             None => None,
             Some( n ) => Some(LinkedList(Rc::clone(n)))
         }
+    }
+}
+
+pub struct ListIntoIterator<T: Copy>(Option<LinkedList<T>>);
+
+//pub struct LinkedList<T: Copy>(Rc<RefCell<Node<T>>>);
+/*impl<T> Iterator for LinkedList<T> where T: Copy{
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!();
+    }
+}*/
+impl<T> Iterator for ListIntoIterator<T> where T: Copy{
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if (*self).0.is_none() { return None }
+        let ret = (*(*((*((*self).0.as_ref().unwrap())).0)).borrow()).value;
+        (*self).0 = (*self).0.as_ref().unwrap().advance();
+        Some(ret)
+    }
+}
+impl<T> IntoIterator for LinkedList<T> where T: Copy{
+    type Item = T;
+    type IntoIter = ListIntoIterator<T>;
+    fn into_iter(self) -> Self::IntoIter{
+        ListIntoIterator(Some(self))
     }
 }
