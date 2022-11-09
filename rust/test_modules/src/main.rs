@@ -83,4 +83,27 @@ fn main()
 
     //utilizando o pub use em lib
     let _hm: lib::HashMap<String, String> = lib::HashMap::new();
+
+    //UPDATE OF TESTE_MODULES//
+    use lib::{area, volume};
+    let sph = lib::Sphere::new(2.0);
+    let sqr = lib::Cube::new(4.0);
+    println!("Area sphere: {}, Area Cube: {}", area(&sph), area(&sqr));
+    println!("Volume sphere: {}, Volume Cube: {}", volume(&sph), volume(&sqr));
+
+    //a user personal solid that implements Dimensions
+    struct RectangularSolid{
+        l: f64, w: f64, h: f64
+    }
+    impl lib::Dimensions for RectangularSolid{
+        fn area(&self) -> f64 {
+            2.0*( self.l * self.h + self.l * self.w + self.w * self.h)
+        }
+        fn volume(&self) -> f64{
+            self.l * self.w * self.h
+        }
+    }
+    let (l, w, h) = (2.0, 3.6, 1.2);
+    let rectan = RectangularSolid{ l, w, h };
+    println!("Volume: {}, Area: {}", volume(&rectan), area(&rectan)); 
 }
