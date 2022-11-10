@@ -1,18 +1,30 @@
 use std::io::{prelude::*, BufReader};
 use std::net::{TcpListener, TcpStream};
+use std::thread;
+use std::time::Duration;
+use server_project::*;
+
 fn main() {
     //127.0.0.1 represents our PC and 7878 is the choosed communication port
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     //bind will return a Result with TcpListener to that address or an error
     //by example any port under 1023 must cause an error, they need administrator privileges
-
-    for stream in listener.incoming(){
+    let pool = ThreadPool::new(4);
+    //ThreadPool have a fixed amount of threads ready to execute any request, if they are
+    //availables, else the request will wait till one get free
+    
+    for stream in listener.incoming()
+                          //.take(4) //just to see the drop implementation for ThreadPool running  
+    {
         //incoming() returns a Result with a TcpStream or an error
         //a TcpStream represents a full connection between a server and a client (request and response)
 
         let stream = stream.unwrap();
         println!("Connection established");
-        handle_connection(stream);
+        //sends the incoming stream to the pool
+        pool.execute(||{
+                handle_connection(stream);
+        });
         //when a strem goes out of the scope the connection is closed(drop implementation)
     }
 }
@@ -44,11 +56,16 @@ fn handle_connection(mut stream: TcpStream) {
     //"HTTP/1.1 200 OK\r\n\r\n"; //a simple response to client's request
     //with HTTP version, status-code(200 = standard success code), an OK and no headers or body
 
-    let (status_response, html_file) = if request == "GET / HTTP/1.1"
-     { ("HTTP/1.1 200 OK", "hello.html") } //valid request to 127.0.0.1:7878
-    else
-     { ("HTTP/1.1 404 NOT FOUND", "error.html") }; //any other request is an error(an example: 127.0.0.1:7878/hello)
-
+    let (status_response, html_file) = match &request[..] //request is a String &request[..] is a reference
+    {                                                     //to a slice of a String == &str
+        "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", "hello.html"), //valid request to 127.0.0.1:7878
+        "GET /sleep HTTP/1.1" => { //request to 127.0.0.1:7878/sleep
+            thread::sleep(Duration::from_secs(5));
+            ("HTTP/1.1 200 OK", "hello.html")
+        },
+        _ => ("HTTP/1.1 404 NOT FOUND", "error.html") //any other request is an error(an example: 127.0.0.1:7878/hello)
+    };
+    
     let content = std::fs::read_to_string(html_file).unwrap(); //reading the html file to a string
     let content_lenght = content.len();
     let response = format!("{status_response}\r\nContent lenght: {content_lenght}\r\n\r\n{content}");
