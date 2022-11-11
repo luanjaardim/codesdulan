@@ -1733,13 +1733,90 @@ fn main(){
     println!["{sla}"];
     //macros accepst {}, () and [] to delimitate
 
+    println!["Enter a f64, i32, String, char, bool. (with ' ,' between them)"];
     let output = scanf!(f64, i32, String, char, bool);
     //the input must respect the order of the types
     //and the input format: (f64), (i32), (String), (char), (bool)
     println!("{output:?}");
 }*/
 
-fn main() -> std::io::Result<()> {
-        
-    Ok(())
+//BOXING STRUCTS IN ENUMS AND THEN UNBOXING
+/*//putting that struct in a box to unbox it latter :0
+trait Converter<T>{
+    fn transmutate(&self) -> T;
+//when implmenting Converter we must especifie the generic T
+//as the same type of the struct we are implementing, being in a Converter method 
+//we can acces it's fields and generate a new struct with the same fields(tricks)
+}
+
+#[derive(Debug)]
+struct Tipo1(i32, i32);
+impl Converter<Tipo1> for Tipo1{
+    fn transmutate(&self) -> Tipo1{
+        Tipo1(self.0, self.1)
+    }
+}
+#[derive(Debug)]
+struct Tipo2(f64);
+impl Converter<Tipo2> for Tipo2{
+    fn transmutate(&self) -> Tipo2{
+        Tipo2(self.0)
+    }
+}
+
+use Wrapper::Con;
+enum Wrapper<T>{ 
+//wrapper is a enum that can store any struct that implements Converter<T>
+//with it we can get the struct back unboxing the Wrapper and then transmuting it's content
+    Con(Box<dyn Converter<T>>)
+}
+impl<T> Wrapper<T>{
+    fn new(stru: Box<dyn Converter<T>>) -> Wrapper<T>{
+        Con(stru)
+    }
+    fn unboxing(self) -> Box<dyn Converter<T>>{
+        let Con(inner) = self;
+        inner
+    }
+}
+
+fn main(){
+    let wrap1 = Wrapper::new(Box::new(Tipo1(1, 2)));
+    let type1 = wrap1.unboxing() //a Box to a struct that implements Convert<T>
+                     .transmutate(); //acessing Convert<T> methods
+    //don't matter what struct is unboxed, that must implement Convert<T>,
+    //so we can call the transmutate method, and then access the impl
+    //of the especifc type that the Box is referring to get a new struct
+    
+    let wrap2 = Wrapper::new(Box::new(Tipo2(1.2)));
+    let type2 = wrap2.unboxing().transmutate(); 
+    println!("{type1:?} {} {}", type1.0, type1.1);
+    println!("{type2:?} {}", type2.0);
+
+    //making a new type and then impl Convert<T>
+    #[derive(Debug)]
+    struct NewStruct{
+        float: f64,
+        int: i32,
+    }
+    impl NewStruct{
+        fn sum(&self) -> f64{
+            self.float + (self.int as f64)
+        }
+    }
+    impl Converter<NewStruct> for NewStruct{
+        fn transmutate(&self) -> NewStruct{
+            NewStruct{
+                float: self.float,
+                int: self.int
+            }
+        }
+    }
+    let x = Wrapper::new(Box::new(NewStruct{ float: 5.5, int: 9 }));
+    let y = x.unboxing().transmutate();
+    println!("{} {} {}", y.float, y.int, y.sum())
+}*/
+
+fn main(){
+    
 }
