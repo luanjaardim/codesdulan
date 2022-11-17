@@ -1817,6 +1817,46 @@ fn main(){
     println!("{} {} {}", y.float, y.int, y.sum())
 }*/
 
+//USING UNINITIALIZED VALUES
+/*use std::mem::{self, MaybeUninit};
+const SIZE: usize = 10;
 fn main(){
-    
-}
+    //using MaybeUninit to initialize an array without assign it's values
+    let mut ar: [MaybeUninit<i32>; SIZE] = unsafe{ 
+        MaybeUninit::uninit().assume_init() //assuming as initialized
+    };
+    for i in 0..(SIZE/2){ //initializing only half of the full array
+        ar[i] = MaybeUninit::new((i + i*i) as i32);
+    }
+    //using mem::trasmute to converts MaybeUninit<i32> to i32
+    //transmute is, recomendly, avoided at the most, but for MaybeUninit
+    //it's good to use
+    let ar2 = unsafe{ mem::transmute::<_, [i32; SIZE]>(ar) };
+    for v in ar2.iter(){
+        println!("{v}");
+    }
+}*/
+
+//SOME SORTING ALGORITHMS
+/*//all implementations in lib.rs
+mod lib;
+use lib::*;
+fn main(){
+    let mut v = [2, 5, 1, 2, 3, 7, 8, 9, 1, 0];
+    sel_sort(&mut v, true);
+    println!("{v:?}");
+    let mut v = ['a', 'b', 'g', 'u', 'o', 'c', 'p'];
+    bub_sort(&mut v, false);    
+    println!("{v:?}");
+    let mut v = vec!["asd", "bs", "aa", "fg", "sdasd", "aaaaaaaaaa"];
+    ins_sort(&mut v, true);
+    println!("{v:?}");
+    push_order(&mut v, "angels", true);    
+    println!("{v:?}");
+    let mut v = [String::from("opa"), String::from("apa"), String::from("aa"), String::from("a"), String::from("maan")];
+    mer_sort(&mut v, false);
+    println!("{v:?}");
+    let mut v = [5.1, 4.2, 23.9, 78.1, 21.56, 4.19, 5.12, 1.001, 2.25, 3.11];
+    qui_sort(&mut v);
+    println!("{v:?}");
+}*/
