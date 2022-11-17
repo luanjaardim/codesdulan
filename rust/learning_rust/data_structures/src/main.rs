@@ -1,4 +1,5 @@
-mod linked_list;
+//LINKED LIST
+/*mod linked_list;
 use linked_list::*;
 
 fn main(){
@@ -25,4 +26,26 @@ fn main(){
         print!("{i} ");
     }
     println!("");
+}*/
+
+//GRAPH
+mod graph;
+use graph::*;
+fn main(){
+    let mut g = Graph::new();
+    g.insert(0, 2, 5.65);
+    g.insert(0, 2, 5.5);
+    g.insert(0, 1, 5.5);
+    g.printing();
+    println!("{:?}", g.first(2));
+    println!("{}", g.is_node(4));
+    for sla in 5..20{
+        g.insert(0, sla, 1.0);
+    }
+    //g.printing();
+    g.insert(0, 1, 2.0);
+    g.insert(0, 1, 0.5);
+    g.printing();
+    println!("{:?}", g.weight(0, 1));
+    println!("{:?}", g.weight(0, 4));
 }
