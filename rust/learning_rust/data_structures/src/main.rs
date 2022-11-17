@@ -37,7 +37,7 @@ fn main(){
     g.insert(0, 2, 5.5);
     g.insert(0, 1, 5.5);
     g.printing();
-    println!("{:?}", g.first(2));
+    println!("{:?}, {:?}", g.first(3), g.first(2));
     println!("{}", g.is_node(4));
     for sla in 5..20{
         g.insert(0, sla, 1.0);
@@ -48,4 +48,19 @@ fn main(){
     g.printing();
     println!("{:?}", g.weight(0, 1));
     println!("{:?}", g.weight(0, 4));
+
+    println!("{:?} {:?} {:?}", g.remove(3, 0), g.remove(1, 2), g.remove(1, 0));
+    drop(g);
+    
+    let mut g = Graph::new();
+    g.insert('a', 'b', 1);
+    g.insert('b', 'c', 2);
+    g.insert('a', 'd', 3);
+    g.printing();
+    println!("{:?}", g.remove('b', 'c'));
+    g.printing();
+    println!("{:?}", g.remove('b', 'a'));
+    g.printing();
+    println!("{:?}", g.remove('d', 'a'));
+    g.printing();
 }
