@@ -14,7 +14,7 @@ fn main() {
     //availables, else the request will wait till one get free
     
     for stream in listener.incoming()
-                          //.take(4) //just to see the drop implementation for ThreadPool running  
+                          //.take(4) //DROP ADVICE: just to see the drop implementation for ThreadPool running  
     {
         //incoming() returns a Result with a TcpStream or an error
         //a TcpStream represents a full connection between a server and a client (request and response)
