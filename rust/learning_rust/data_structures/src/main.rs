@@ -7,7 +7,7 @@ fn main(){
     //this method also returns a LinkedList with the node just inserted as the head, so we can:
     list.push(3).push(2); //here the 2 is going to be inserted after the 3
     // 4 -> 3 -> 2 -> 1
-    //if we did this: list.push(3); list.push(2); (insering elements based on list node)
+    //if we did this: list.push(3); list.push(2); (insering elements based on list head node)
     //this will occur; 4 -> 2 -> 3 -> 1
 
     //next method returns an option of a LinkedList, so after dealing with Some(T) or None
