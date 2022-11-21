@@ -1389,7 +1389,474 @@ fn main() -> io::Result<()>{
     Ok(())
 }*/
 
+//ADVANCED FEATURES IN RUST
+
+//ADVANCED FEATURES IN RUST -> UNSAFE RUST:
+/*//in Rust we have unsafe blocks to write codes that have at least:
+//static mut operations
+//raw pointers dereference operations
+//calls to unsafe functions or methods
+//implementations of unsafe traits
+//acess to unions fields(i won't cover that)
+
+extern "C"{ //a simple way to use C functions in Rust
+    fn abs(x: i32) -> i32;
+}
+//a more sofisticated way to bring our own code from C
+//on ctest project folder
+
+static mut COUNTER: i64 = 0; 
+//static variables are the global variables of Rust
+//they can be mut, but mutate them is a unsafe operation
+const CONST_VALUE: i64 = 10;
+//they are different from const, everywhere that mentionates the const
+//will be replaced with it's value at compile process, a static acts has it's own
+//address like a true variable and can have it's value read and modified(unsafe),
+//both needs a explict type definition at declaration.
+
 fn main() -> std::io::Result<()> {
-        
+    let mut num: i64 = -5;
+    unsafe { 
+    unsafe_work(&mut num); 
+    println!("{num} {}", abs(num as i32)); //extern C functions must be called inside unsafe blocks
+    
+    println!("COUNTER value: {}", COUNTER);
+    mutate_static();
+    println!("COUNTER value: {}", COUNTER);    
+    } //unsafe
+
+    //unsafe{ //working with raw pointers and it's methods
+    
+    //}
     Ok(())
 }
+unsafe fn unsafe_work(pnt: &mut i64){
+//unsafe functions only can be called inside unsafe blocks
+    let pnt1 = pnt as *const i64; //create raw pointers isn't a unsafe operation
+    let pnt2 = pnt as *mut i64;
+    unsafe {
+        *pnt2 = -10; //dereference raw pointers is a unsafe operation
+        println!("{:?} {:?} {}", pnt1, pnt1.offset(1), *pnt2); 
+    }
+} 
+unsafe fn mutate_static(){
+    unsafe { COUNTER += CONST_VALUE; }
+}
+
+//traits can be unsafe too:
+pub unsafe trait Foo{
+    fn bar(){ println!("unsafe code lays here"); }
+}
+pub struct Fuba<T>(T);
+unsafe impl<T> Foo for Fuba<T> {} 
+//so the implementation for the Foo trait must be unsafe too 
+*/
+
+//ADVANCED FEATURES IN RUST -> ADVANCED TRAITS:
+/*//traits are very used in Rust to define properties that a certain
+//group respect and implements, some advanced topics about traits 
+//will be covered here:
+
+trait AssociatedTrait{
+    type AssType;
+    //this trait has a associated type, some trait of std has it
+    //inside it's definition, that type is connected with
+    fn greatest_of_greatests(&mut self, vector: Self::AssType) -> i32;
+    fn new(first: i32);
+}
+struct MyStruct{
+    v: Vec<i32>, 
+    greater: i32 
+}
+impl MyStruct{
+    fn new(first: i32) -> MyStruct{
+        MyStruct{
+            v: vec![first], greater: first
+        }
+    }
+    fn update_greatest(&mut self){
+        let mut max = (*self).v[0];
+        for i in &(*self).v{
+            if max < *i {
+                max = *i; 
+            }
+        }
+        (*self).greater = max;
+    }
+}
+impl AssociatedTrait for MyStruct{
+    //don't matter the type of T, AssType must be a Vec<T>
+    type AssType = Vec<i32>;
+    fn new(first: i32){
+        println!("this function exists just for explanation about syntax to disambiguation! {first}");
+    }
+    fn greatest_of_greatests(&mut self, mut vector: Self::AssType) -> i32 {
+        (*self).update_greatest();
+        vector.sort_unstable();
+        if self.greater > vector[vector.len() - 1]{
+            return self.greater
+        }
+        vector[vector.len() - 1]
+    }
+}
+
+struct Point(i32, i32);
+impl std::fmt::Display for Point{ //implementing the way to transform Point in String to be Displayed
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.0, self.1)
+    }
+}
+//CustomPrint is a super trait, only types that implements Display can implement CustomPrint
+trait CustomPrint: std::fmt::Display {
+    fn custom_print(&self);
+}
+impl CustomPrint for Point{
+    fn custom_print(&self) {
+        let s = self.to_string(); //a type that implements display, has .to_string() method
+        println!("*{}*", "*".repeat(s.len() + 2)); //************                  */
+        println!("*{}*", " ".repeat(s.len() + 2)); //*          *                  */
+        println!("* {s} *");                       //* a string *                  */
+        println!("*{}*", " ".repeat(s.len() + 2)); //*          *                  */
+        println!("*{}*", "*".repeat(s.len() + 2)); //************                  */
+    }
+}
+
+//a important thing to know about traits is that we cannot implement a std trait
+//to an std type, but we can implement our trait for std types or std traits for our types, so:
+//impl std::fmt::Display for Vec<String> //won't work
+
+//a solution is to use a struct as a Wrapper:
+struct Wrapper(Vec<String>);
+impl std::fmt::Display for Wrapper{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}]", self.0.join(", "))
+    }
+}
+//unfortunately, with this we can't use Vec<> methods directly
+//a solution could be implement the Deref trait:
+impl std::ops::Deref for Wrapper{
+    type Target = Vec<String>;
+    fn deref(&self) -> &Self::Target {
+        &(*self).0
+    }
+}
+impl std::ops::DerefMut for Wrapper{
+    fn deref_mut(&mut self) -> &mut Self::Target { //Target from the Deref trait
+        &mut (*self).0
+    }
+}
+fn main(){
+    let mut st1 = MyStruct::new(1);
+    st1.v.push(2);
+    st1.v.push(5);
+    st1.v.push(6);
+    st1.v.push(8);
+    let v = vec![5, 6, 2, 9];
+    let greater = st1.greatest_of_greatests(v);
+    println!("{greater}");
+    // AssociatedTrait::new(5); //how to distinguish new from impl Mystruct and impl AssociedTrait for MyStruct?
+    //calls the function AssociatedTrait implemented for MyStruct 
+    <MyStruct as AssociatedTrait>::new(5);
+
+    let point = Point(89, 68);
+    point.custom_print();
+
+    let mut wrap = Wrapper(vec!["hello".to_owned(), "world!".to_owned()]);
+    println!("{}", wrap);
+    (*wrap).push("another".to_owned());
+    (*wrap).push("hello!".to_owned());
+    (*wrap).sort_unstable();
+    println!("{}", wrap);
+}*/
+
+//ADVANCED FEATURES IN RUST -> ADVANCED TYPES:
+/*use std::rc::Rc;
+use std::cell::RefCell;
+type MyType<T> = Option<Rc<RefCell<T>>>;
+//the type keyword can be used as a easily way to write a
+//large type as we have above, for now on they mean the same thing,
+//a example is the std::io::Result<T> that is an alias for:
+//std::result::Result<T, std::io::Error>
+fn main() -> std::io::Result<()> {
+    /*let op = Some(5);
+    let var = match op{
+        Some(_) => 5,
+        None => "hello"
+    };*/
+    //when using a match we aren't able to have different types for each
+    //match arm, that's because rust must know at compile time the var's type, but:
+    let mut cnt = 0;
+    let res = loop{
+        cnt += 1;
+        //but here we have two arms with different types, continue isn't a i32,
+        //he has the never type( ! ), ! can *never* have a value, that allows
+        //rust infer that the only possible value for var is a i32, that will be it's type,
+        //another example is the panic! macro that also has never type
+        let var = match cnt {
+            0..=10 => continue,
+            x => x
+        };
+        break var
+    };
+    println!("{res}");
+
+    //dynamically sized types are types that we don't know the size at compile time
+    //we have the reserved keyword "dyn" to especify them, a example is the str type
+    //"just a word" and "word" have different size, but for a &str they have the same
+    //size = a pointer to the begin of the word and the len of the word
+    //with this we can know the size, at compile time, for a &str, even if the 
+    //amount of data that Rust will alocate to keep these bytes is unknown
+
+    //*see the lib.rs at test_modules crate for another example*//
+    Ok(())
+}*/
+
+//ADVANCED FEATURES IN RUST -> ADVANCED FUNCTIONS AND CLOSURES:
+/*fn some_func<F: Fn(i32) -> i32 >(f: F, v: i32) -> i32 { f(v) }
+fn another_func(f: fn(i32) -> i32, v: i32) -> i32 { f(v) }
+fn doubler(x: i32) -> i32 { x*2 }
+
+//when exploring for the first time closures, i wasn't able to modify a
+//field of a struct that receives a closure, a way to do that is to use:
+type Inner = Box<dyn Fn() -> i32>;
+struct Teste(Inner);
+
+//another funcionality is the capacity to return closures from a function/closure
+type ClosRet<T> = Box<dyn Fn(T, T) -> T>;
+fn return_clos<T>() -> ClosRet<T>
+    where T: std::ops::Add<Output = T>
+{
+    Box::new(|x: T, y: T| x+y)    
+}
+
+fn main(){
+    let mut ret = some_func(|x| x+1, 2);
+    println!("receiving a closure with some_func: {ret}");
+    ret = some_func(doubler, 4);
+    println!("receiving a function pointer with some_func: {ret}");
+    ret = another_func(doubler, 4);
+    println!("receiving a function pointer with another_func: {ret}");
+    ret = another_func(|x| x+1, 2);
+    println!("receiving a closure with another_func: {ret}");
+    
+    let mut sla = Teste(Box::new(|| 5));
+    println!("{}", (*sla.0)());
+    sla.0 = Box::new(|| 4); //modifying the field that contains a closure
+    println!("{}", (*sla.0)());    
+
+    let sla = || { |x| x+1 }; //a closure that returns another closure
+    let sla2 = sla();
+    println!("{}", sla2(99));
+
+    let clos = return_clos(); //a function that returns a add closure
+    println!("{}", clos(20, 30));
+    let clos = return_clos(); //the type of the closure is generic, until the first call
+    println!("{}", clos(2.1, 3.98));
+    //println!("{}", clos(2, 3)); //error
+    
+    let v: Vec<_> = (1..=10).into_iter().map(doubler).collect();
+    //map can receive either a closure or a function
+    println!("{v:?}");
+}*/
+
+//ADVANCED FEATURES IN RUST -> MACROS:
+/*//macros are funcionalities in Rust that can "expand" creating more code
+//during compile time, at some point they are very similar to functions,
+//but this atribute make them useful for a lot of other things that won't
+//be possible with functions, however they are verboser and hard to write
+
+//a simple macro inits with a macros_rule! and it's name, without the !:
+#[macro_export] //exporting for use
+macro_rules! first_macro {
+    //inside a macro we have the rules of that macro that acts like a match arm,
+    //when the condition for the rule is valid the invocation is replaced by the expansion
+    ($e:expr) => {
+        $e * 5
+    };
+    //a variable inside a rule has a $ and a specifier :(specifier) that determines the kind
+    //of the capture: expr for expressions, item for items(functions, struct, mod, impl, ...), ...
+    
+    ($e:expr, $x:expr) => {
+        $e + $x
+    };
+    //now we have a rule that receive 2 expressions, if we use more than one expression inside
+    //our macro the first tule won't validate, then we go for the second rule, and then goes
+    
+    ($e:expr, $($x:expr),* ) => { 
+        {
+            let mut sla = $e; //the first expression 
+            $(
+                sla *= $x; //all other expressions
+            )*
+            sla //return value
+        } //as we are using ';' at some lines we need to create a new scope
+    };
+    //at this rule we have a repetition, $( ... ),* represents that:
+    //what's inside $( ... ) gonna repeat
+    //  , -> with a ',' as a separator => 1, 2, 3, 4 ...
+    //  * -> 0 or more times 
+    //so this will repeat untill there isn't any expressions to put in $x
+    //don't matter how many expressions we pass to our macro, this rule
+    //will validate...
+
+    //for the separator we could have ';' or none, and for '*' there is other options:
+    //? -> indicating at most one repetition
+    //+ -> indicating one or more repetitions
+}
+
+//attempt to make a "scanf" in Rust with macros
+#[macro_export]
+macro_rules! scanf{
+    ( $( $x:ty ),* ) => {
+    //receiving a serie of types
+        {
+        let mut s = String::new();
+        std::io::stdin().read_line(&mut s).expect("Fail to read");
+        //reading from stdin the string to parse, with ", " between the elements
+
+        let mut iter = s.trim().split(", ").into_iter();
+        ( //begin of the return tuple
+            $(
+            iter.next().expect("Fail at next").parse::<$x>().expect("Fail to parse") //parse matching the type received
+            ),* //the ',' to separate the elements in the tuple
+        ) //return tuple
+        }
+    };//end of the rule
+}//end of the macro
+
+fn main(){
+    let mut sla = first_macro!{1};
+    println!{"{sla}"};
+    sla = first_macro!(5, 5);
+    println!("{sla}");
+    sla = first_macro![2, 2, 2, 2, 2, 2];
+    println!["{sla}"];
+    //macros accepst {}, () and [] to delimitate
+
+    println!["Enter a f64, i32, String, char, bool. (with ' ,' between them)"];
+    let output = scanf!(f64, i32, String, char, bool);
+    //the input must respect the order of the types
+    //and the input format: (f64), (i32), (String), (char), (bool)
+    println!("{output:?}");
+}*/
+
+//BOXING STRUCTS IN ENUMS AND THEN UNBOXING
+/*//putting that struct in a box to unbox it latter :0
+trait Converter<T>{
+    fn transmutate(&self) -> T;
+//when implmenting Converter we must especifie the generic T
+//as the same type of the struct we are implementing, being in a Converter method 
+//we can acces it's fields and generate a new struct with the same fields(tricks)
+}
+
+#[derive(Debug)]
+struct Tipo1(i32, i32);
+impl Converter<Tipo1> for Tipo1{
+    fn transmutate(&self) -> Tipo1{
+        Tipo1(self.0, self.1)
+    }
+}
+#[derive(Debug)]
+struct Tipo2(f64);
+impl Converter<Tipo2> for Tipo2{
+    fn transmutate(&self) -> Tipo2{
+        Tipo2(self.0)
+    }
+}
+
+use Wrapper::Con;
+enum Wrapper<T>{ 
+//wrapper is a enum that can store any struct that implements Converter<T>
+//with it we can get the struct back unboxing the Wrapper and then transmuting it's content
+    Con(Box<dyn Converter<T>>)
+}
+impl<T> Wrapper<T>{
+    fn new(stru: Box<dyn Converter<T>>) -> Wrapper<T>{
+        Con(stru)
+    }
+    fn unboxing(self) -> Box<dyn Converter<T>>{
+        let Con(inner) = self;
+        inner
+    }
+}
+
+fn main(){
+    let wrap1 = Wrapper::new(Box::new(Tipo1(1, 2)));
+    let type1 = wrap1.unboxing() //a Box to a struct that implements Convert<T>
+                     .transmutate(); //acessing Convert<T> methods
+    //don't matter what struct is unboxed, that must implement Convert<T>,
+    //so we can call the transmutate method, and then access the impl
+    //of the especifc type that the Box is referring to get a new struct
+    
+    let wrap2 = Wrapper::new(Box::new(Tipo2(1.2)));
+    let type2 = wrap2.unboxing().transmutate(); 
+    println!("{type1:?} {} {}", type1.0, type1.1);
+    println!("{type2:?} {}", type2.0);
+
+    //making a new type and then impl Convert<T>
+    #[derive(Debug)]
+    struct NewStruct{
+        float: f64,
+        int: i32,
+    }
+    impl NewStruct{
+        fn sum(&self) -> f64{
+            self.float + (self.int as f64)
+        }
+    }
+    impl Converter<NewStruct> for NewStruct{
+        fn transmutate(&self) -> NewStruct{
+            NewStruct{
+                float: self.float,
+                int: self.int
+            }
+        }
+    }
+    let x = Wrapper::new(Box::new(NewStruct{ float: 5.5, int: 9 }));
+    let y = x.unboxing().transmutate();
+    println!("{} {} {}", y.float, y.int, y.sum())
+}*/
+
+//USING UNINITIALIZED VALUES
+/*use std::mem::{self, MaybeUninit};
+const SIZE: usize = 10;
+fn main(){
+    //using MaybeUninit to initialize an array without assign it's values
+    let mut ar: [MaybeUninit<i32>; SIZE] = unsafe{ 
+        MaybeUninit::uninit().assume_init() //assuming as initialized
+    };
+    for i in 0..(SIZE/2){ //initializing only half of the full array
+        ar[i] = MaybeUninit::new((i + i*i) as i32);
+    }
+    //using mem::trasmute to converts MaybeUninit<i32> to i32
+    //transmute is, recomendly, avoided at the most, but for MaybeUninit
+    //it's good to use
+    let ar2 = unsafe{ mem::transmute::<_, [i32; SIZE]>(ar) };
+    for v in ar2.iter(){
+        println!("{v}");
+    }
+}*/
+
+//SOME SORTING ALGORITHMS
+/*//all implementations in lib.rs
+mod lib;
+use lib::*;
+fn main(){
+    let mut v = [2, 5, 1, 2, 3, 7, 8, 9, 1, 0];
+    sel_sort(&mut v, true);
+    println!("{v:?}");
+    let mut v = ['a', 'b', 'g', 'u', 'o', 'c', 'p'];
+    bub_sort(&mut v, false);    
+    println!("{v:?}");
+    let mut v = vec!["asd", "bs", "aa", "fg", "sdasd", "aaaaaaaaaa"];
+    ins_sort(&mut v, true);
+    println!("{v:?}");
+    push_order(&mut v, "angels", true);    
+    println!("{v:?}");
+    let mut v = [String::from("opa"), String::from("apa"), String::from("aa"), String::from("a"), String::from("maan")];
+    mer_sort(&mut v, false);
+    println!("{v:?}");
+    let mut v = [5.1, 4.2, 23.9, 78.1, 21.56, 4.19, 5.12, 1.001, 2.25, 3.11];
+    qui_sort(&mut v);
+    println!("{v:?}");
+}*/

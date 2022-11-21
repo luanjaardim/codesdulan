@@ -177,3 +177,198 @@ impl S{
         Self(entry)
     }
 }*/
+
+//SOME SORTING ALGORITHMS
+pub fn sel_sort<T>(ar: &mut [T], mode: bool)
+where    
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug
+{
+    assert!(ar.len() > 0);
+    let op = if mode { 
+        |elem1, elem2| { elem1 > elem2 }
+    } else{
+        |elem1, elem2| { elem1 < elem2 }
+    };
+    for i in 0..ar.len()-1{
+        let mut ind = i;
+        for j in i..ar.len(){
+            if op(ar[ind].clone(), ar[j].clone()) {
+                ind = j;
+            }
+        }
+        ar.swap(i, ind);
+    }
+}
+
+pub fn bub_sort<T>(ar: &mut [T], mode: bool) 
+where    
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug
+{
+    assert!(ar.len() > 0);
+    let op = if mode { 
+        |elem1, elem2| { elem1 > elem2 }
+    } else{
+        |elem1, elem2| { elem1 < elem2 }
+    };
+    for i in 0..ar.len()-1{
+        for j in 0..ar.len()-1-i{
+            if op(ar[j].clone(), ar[j+1].clone()){
+                ar.swap(j, j+1);
+            }
+        }
+    }
+}
+
+pub fn ins_sort<T>(ar: &mut [T], mode: bool) 
+where    
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug
+{
+    assert!(ar.len() > 0);
+    let op = if mode { 
+        |elem1, elem2| { elem1 > elem2 }
+    } else{
+        |elem1, elem2| { elem1 < elem2 }
+    };
+    for i in 1..ar.len(){
+        let mut j = i;
+        let val = ar[j].clone();
+        while j > 0 && op(ar[j-1].clone(), val.clone())
+        {
+            ar[j] = ar[j-1].clone();
+            j -= 1;
+        }
+        ar[j] = val;
+    }
+}
+
+pub fn push_order<T>(ar: &mut Vec<T>, v: T, mode: bool)
+where
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug    
+{
+    assert!(ar.len() > 0);
+    let op = if mode { 
+        |elem1, elem2| { elem1 > elem2 }
+    } else{
+        |elem1, elem2| { elem1 < elem2 }
+    };
+    ar.push(v);
+    let mut j = ar.len() - 1;
+    let val = ar[j].clone();
+    while j > 0 && op(ar[j-1].clone(), val.clone())
+    {
+        ar[j] = ar[j-1].clone();
+        j -= 1;
+    }
+    ar[j] = val;
+}
+
+pub fn mer_sort<T>(ar: &mut [T], mode: bool)
+where
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug    
+{
+    assert!(ar.len() > 0);
+
+    let (l, r) = (0, ar.len()-1);
+    let m = (l + r)/2;
+    mer_aux(ar, l, m, mode);
+    mer_aux(ar, m+1, r, mode);
+
+    let op = if mode {
+        |elem1, elem2| { elem1 >= elem2 }
+    } else {
+        |elem1, elem2| { elem1 <= elem2 }
+    };
+    let (mut i1, mut i2) = (l, m+1);
+    let mut tmp_array = Vec::with_capacity(ar.len());
+    for i in ar.iter(){
+        tmp_array.push(i.clone());
+    }
+    
+    for curr in l..=r{ //r == ar.len()
+        if i1 > m { 
+            ar[curr] = tmp_array[i2].clone(); i2 += 1;            
+        } else if i2 > r {
+            ar[curr] = tmp_array[i1].clone(); i1 += 1;
+        } else if op(tmp_array[i1].clone(), tmp_array[i2].clone()) {
+            ar[curr] = tmp_array[i1].clone(); i1 += 1;
+        } else {
+            ar[curr] = tmp_array[i2].clone(); i2 += 1;
+        }
+    }
+}
+fn mer_aux<T>(ar: &mut [T], l: usize, r: usize,  mode: bool)
+where
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug
+{
+    if l < r //for arrays with one element l == r, end of recursion
+    {
+        let mut m = (l + r)/2;
+        mer_aux(ar, l, m, mode);
+        mer_aux(ar, m+1, r, mode);
+
+        let op = if mode {
+            |elem1, elem2| { elem1 >= elem2 }
+        } else {
+            |elem1, elem2| { elem1 <= elem2 }
+        };
+
+        let tam = r+1 - l;
+        m = (tam-1)/2;
+        let (mut i1, mut i2) = (0, m+1);
+        
+        let mut tmp_array = Vec::with_capacity(tam);
+        for i in l..=r {
+            tmp_array.push(ar[i].clone());
+        }
+        
+        for curr in l..=r{ //r == ar.len()
+            if i1 > m { 
+                ar[curr] = tmp_array[i2].clone(); i2 += 1;            
+            } else if i2 > (tam-1) {
+                ar[curr] = tmp_array[i1].clone(); i1 += 1;
+            } else if op(tmp_array[i1].clone(), tmp_array[i2].clone()) {
+                ar[curr] = tmp_array[i1].clone(); i1 += 1;
+            } else {
+                ar[curr] = tmp_array[i2].clone(); i2 += 1;
+            }
+        }
+    }
+}
+
+pub fn qui_sort<T>(ar: &mut [T])
+where
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug
+{
+    assert!(ar.len() > 0);
+    let (l, r) = (0, (ar.len() - 1) as isize);
+    let s = partition(ar, l, r);
+    qui_aux(ar, l, s-1);
+    qui_aux(ar, s+1, r);
+}
+fn qui_aux<T>(ar: &mut [T], l: isize, r: isize)
+where
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug
+{
+    if l < r 
+    {
+        let s = partition(ar, l, r);
+        qui_aux(ar, l, s-1); //why s-1 can be -1 we are working with isize and casting to usize for indexing
+        qui_aux(ar, s+1, r);
+    }
+}
+fn partition<T>(v: &mut [T], l: isize, r: isize) -> isize
+where
+    T: PartialOrd + PartialEq + Clone//+ std::fmt::Debug
+{
+    let val = v[l as usize].clone();
+    let (mut i, mut j) = (l as usize, r as usize);
+
+    while i < j {
+        while v[i] <= val && i < r as usize { i+=1; }
+        while v[j] >= val && j > l as usize { j-=1; }
+        v.swap(i, j);
+    }
+    v.swap(i, j);
+    v.swap(l as usize, j);
+    j as isize
+}
