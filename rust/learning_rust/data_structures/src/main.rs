@@ -1,5 +1,5 @@
 //LINKED LIST
-mod linked_list;
+/*mod linked_list;
 use linked_list::*;
 fn main(){
     let mut list = LinkedList::new(4); //returns the list head, first node
@@ -56,7 +56,7 @@ fn main(){
     list.change_value(10); //change the value of the LinkedList head's
     println!("{:?}", list.pop());
     list.printing();
-}
+}*/
 
 //GRAPH
 /*mod graph;
