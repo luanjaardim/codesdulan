@@ -1,18 +1,20 @@
+use std::fmt::Debug;
 use std::rc::Rc;
 use std::cell::RefCell;
 
 #[derive(Debug, Clone)]
-pub struct LinkedList<T: Clone>(Rc<RefCell<Node<T>>>);
+pub struct LinkedList<T: Clone + Debug>(Rc<RefCell<Node<T>>>);
 
 #[derive(Debug, Clone)]
-struct Node<T> where T: Clone{
+pub struct Node<T> where T: Clone + Debug{
     next: Option<Rc<RefCell<Node<T>>>>,
     value: T
 }
 
+//to implement: lenght function, From and Into traits Ex.: LinkedList::from([1, 2, 3])
 impl<T> LinkedList<T> 
 where 
-    T: Clone
+    T: Clone + Debug
 {
     pub fn new(v: T) -> Self {
         LinkedList(
@@ -26,7 +28,7 @@ where
             )
         )
     }
-    pub fn push(&self, v: T) -> Self {
+    pub fn push(&mut self, v: T) -> Self {
         let mut tmp = self.0.borrow_mut(); //reference to Node
         let a = match &tmp.next //checking next node
         { 
@@ -45,8 +47,24 @@ where
         LinkedList(a)
         //this LinkedList is attached to the new_node as it's head
     }
-    pub fn pop(&mut self) {
-        todo!();
+    pub fn pop(&mut self) -> Option<T> { 
+        let (ret, new_next);
+        {
+            let tmp = self.0.borrow();
+            (ret, new_next) = match &tmp.next {
+                None => (None, None),
+                Some( n ) => {
+                    let mut next_node = n.borrow_mut();
+                    let ret = next_node.value.clone();
+                    (Some(ret), next_node.next.take())
+                }
+            };
+        }
+        self.0.borrow_mut().next = new_next;
+        ret
+    }
+    pub fn change_value(&mut self, val: T) {
+        self.0.borrow_mut().value = val;
     }
     pub fn advance(&self) -> Option<Self> {
         let tmp = self.0.borrow(); //reference to node
@@ -56,16 +74,30 @@ where
             //returning a list with the next node as the head
         }
     }
-    pub fn insert_at(&mut self) {
-        todo!();
+    pub fn insert_after(&mut self, val: T, mut ind: usize) {
+        let mut tmp = self.clone();
+        while ind > 0 {
+            tmp = tmp.advance().expect("expected a valid index");
+            ind -= 1;
+        }
+        tmp.push(val);
+    }
+    pub fn printing(&self) {
+        print!("({:?})", (*self.0.borrow()).value);
+        let mut tmp = self.advance();
+        while let Some( n ) = tmp.as_ref() {
+            print!(" -> ({:?})", n.0.borrow().value );
+            tmp = tmp.unwrap().advance();
+        }
+        println!("");
     }
 }
 
-pub struct ListIntoIterator<T: Clone>(Option<LinkedList<T>>);
+pub struct ListIntoIterator<T: Clone + Debug>(Option<LinkedList<T>>);
 
 impl<T> Iterator for ListIntoIterator<T> 
 where 
-    T: Clone
+    T: Clone + Debug
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -80,7 +112,7 @@ where
 }
 impl<T> IntoIterator for LinkedList<T> 
 where 
-    T: Clone
+    T: Clone + Debug
 {
     type Item = T;
     type IntoIter = ListIntoIterator<T>;
