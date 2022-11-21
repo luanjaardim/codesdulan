@@ -1,14 +1,16 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet, VecDeque, BinaryHeap,hash_map::Keys};
 use std::hash::Hash;
+use std::cmp::Reverse;
+
 #[derive(Clone)]
 pub struct Graph<T, U>
     where
         U: PartialOrd + PartialEq + Clone + std::fmt::Debug,
-        T: Eq + Hash + Clone + std::fmt::Debug
+        T: PartialOrd + Eq + Hash + Clone + std::fmt::Debug
 {
     graph: HashMap<T, Vec<(T, U)>>,
     num_nodes: usize,
-    num_edges: usize
+    num_edges: usize,
 }
 impl<T, U> Graph<T, U>
 where
@@ -125,10 +127,121 @@ where
             _ => None
         }
     }
+    pub fn nodes(&self) -> Keys<T, Vec<(T, U)>>{ //iterating over all nodes in graph
+        self.graph.keys()
+    }
+    pub fn neighbours(&self, node: &T) -> &Vec<(T, U)>{ //iterating over all linked nodes
+        self.graph.get(node).expect("a valid node was expected")
+    }
+    pub fn dfs(&self, node: T){
+        if !self.graph.contains_key(&node) { panic!("a valid node was expected"); }
+        
+        let mut to_visit = HashSet::new();
+        for nodes in self.nodes(){
+            to_visit.insert(nodes.clone());
+        }
+        
+        to_visit.remove(&node); //first node visited
+        self.aux_dfs(node, &mut to_visit);
+        
+        loop{ //visiting other 
+            if to_visit.is_empty() { break }
+            self.aux_dfs(to_visit.iter().next().unwrap().clone(), &mut to_visit);
+        }        
+    }
+    fn aux_dfs(&self, node: T, to_visit: &mut HashSet<T>){
+        //previsit()
+        to_visit.remove(&node);
+        for neighbours in self.neighbours(&node){
+            if to_visit.contains(&neighbours.0) { self.aux_dfs(neighbours.0.clone(), to_visit); }
+        }
+        //posvisit
+        println!("{:?} visited", node);
+    }
+    pub fn bfs(&self, node: T){
+        if !self.graph.contains_key(&node) { panic!("a valid node was expected"); }
+        
+        let mut to_visit = HashSet::new();
+        for nodes in self.nodes(){
+            to_visit.insert(nodes.clone());
+        }        
+        to_visit.remove(&node); //first node visited
+        self.aux_bfs(node, &mut to_visit);
+
+        loop{ //visiting other 
+            if to_visit.is_empty() { break }
+            self.aux_bfs(to_visit.iter().next().unwrap().clone(), &mut to_visit);
+        } 
+    }
+    pub fn aux_bfs(&self, node: T, to_visit: &mut HashSet<T>){
+        let mut queue = VecDeque::new();
+        queue.push_front(node.clone());
+        while !queue.is_empty() {
+            //previsit()
+            let n = queue.pop_back().unwrap();
+
+            for (neighbours, _) in self.neighbours(&n){
+                if to_visit.contains(&neighbours) { 
+                    queue.push_front(neighbours.clone());
+                    to_visit.remove(&neighbours);
+                }
+            }
+            //posvisit
+            println!("{:?} visited", n);
+        }
+    }
     pub fn printing(&self){
         for (node, v) in self.graph.iter(){
             println!("{node:?}: {v:?}");
         }
         println!("{} {}", self.num_edges, self.num_nodes);
     }    
+}
+
+//TO IMPLEMENT: a Heap only with Partial Ord to make dijkstra and other
+//algorithms more generics, implement Kruskal for MST and make comments
+impl<T> Graph<T, usize> 
+where
+        T: Ord + Eq + Hash + Clone + std::fmt::Debug    
+{
+    pub fn dijkstra(&self, node: T) -> HashMap<T, usize>{
+        if !self.graph.contains_key(&node) { panic!("a valid node was expected"); }
+        
+        let mut to_visit = HashSet::new(); //unvisited nodes
+        let mut dist = HashMap::new(); //distances
+        for nodes in self.nodes(){
+            to_visit.insert(nodes.clone());
+            dist.insert(nodes.clone(), usize::MAX); 
+            //the initial distance is infinity(the greater it can be -> usize::MAX)
+        }
+                    
+        let mut heap = BinaryHeap::new();
+        heap.push(Reverse((0, node.clone()))); //beginning node
+        //in heap the pair (node, weight) is (weight, node) for ordering purposes
+        //and we are using the Reverse struct do wrap our values and create a min heap
+        *dist.get_mut(&node).unwrap() = 0; //a distance between a node and itself is 0
+        
+        for i in 0..self.num_nodes { //one iteration per node
+            let (n, _) = loop { 
+            //poping the heap till find a unvisited node linked
+            //with the visited one's with the smaller weight
+                if heap.is_empty() { return dist }
+
+                let (w, n) = heap.pop().unwrap().0;
+                if to_visit.contains(&n) {
+                    to_visit.remove(&n); 
+                    break (n, w)
+                }
+            };
+            //println!("{n:?} {w}");
+            for (node, we) in self.neighbours(&n){
+                if *dist.get(&node).unwrap() > we + dist.get(&n).unwrap() {
+                
+                    *dist.get_mut(&node).unwrap() = we + dist.get(&n).unwrap();
+                    heap.push(Reverse((*dist.get(&node).unwrap(), node.clone())));
+                }
+            }
+        }
+        dist
+    }
 }
