@@ -1712,9 +1712,10 @@ macro_rules! scanf{
         {
         let mut s = String::new();
         std::io::stdin().read_line(&mut s).expect("Fail to read");
-        //reading from stdin the string to parse, with ", " between the elements
+        //reading from stdin the string to parse, with "," between the elements
 
-        let mut iter = s.trim().split(", ").into_iter();
+        let mut iter = s.split(",") //iterator
+                        .map(| str | str.trim()); //mapping each element to remove unnecessary chars('\n', ' ')
         ( //begin of the return tuple
             $(
             iter.next().expect("Fail at next").parse::<$x>().expect("Fail to parse") //parse matching the type received
@@ -1733,11 +1734,13 @@ fn main(){
     println!["{sla}"];
     //macros accepst {}, () and [] to delimitate
 
-    println!["Enter a f64, i32, String, char, bool. (with ' ,' between them)"];
+    println!["Enter a f64, i32, String, char, bool. (with ',' between them)"];
     let output = scanf!(f64, i32, String, char, bool);
     //the input must respect the order of the types
     //and the input format: (f64), (i32), (String), (char), (bool)
     println!("{output:?}");
+    let (float, int, s, letter, true_or_false) = output;
+    println!("{}, {}, {}, {}, {}", true_or_false, float, letter, s, int);
 }*/
 
 //BOXING STRUCTS IN ENUMS AND THEN UNBOXING
@@ -1839,6 +1842,7 @@ fn main(){
 
 //SOME SORTING ALGORITHMS
 /*//all implementations in lib.rs
+#[allow(dead_code)]
 mod lib;
 use lib::*;
 fn main(){
@@ -1860,3 +1864,7 @@ fn main(){
     qui_sort(&mut v);
     println!("{v:?}");
 }*/
+
+fn main() {
+    
+}
