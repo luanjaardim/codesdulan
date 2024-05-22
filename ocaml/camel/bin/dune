@@ -1,0 +1,4 @@
+(executable
+ (public_name camel)
+ (name main)
+ (libraries camel threads))

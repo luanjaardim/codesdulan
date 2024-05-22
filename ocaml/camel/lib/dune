@@ -1,0 +1,4 @@
+(library
+ (name camel)
+ (modules lib snd_lib)
+)
